@@ -34,7 +34,7 @@ public class UserController {
 
 	@GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<UserDTO> getUser(@PathVariable long id) {
-		UserDTO userDto = userService.getUserByID(id);
+		UserDTO userDto = userService.getUserBy(id);
 		HttpStatus httpStatus = userDto == null ? HttpStatus.NOT_FOUND : HttpStatus.OK;
 		return new ResponseEntity<UserDTO>(userDto, httpStatus);
 	}
@@ -46,17 +46,17 @@ public class UserController {
 		}
 		UserDTO userDto = userService.saveUser(user);
 		if (userDto == null)
-			return new ResponseEntity<>(HttpStatus.CONFLICT);
+			return ResponseEntity.status(HttpStatus.CONFLICT).build();
 		HttpHeaders httpHeaders = new HttpHeaders();
 		URI locationUri = uriBuilder.path("/user/").path(userDto.getId().toString()).build().toUri();
 		httpHeaders.setLocation(locationUri);
-		return new ResponseEntity<UserDTO>(userDto, httpHeaders, HttpStatus.CREATED);
+		return ResponseEntity.status(HttpStatus.CREATED).location(locationUri).build();
 	}
 
 	@DeleteMapping(path = "/{id}/delete")
 	public ResponseEntity<Void> deleteUser(@PathVariable long id) {
 		HttpStatus status = userService.deleteUser(id) ? HttpStatus.OK : HttpStatus.NOT_FOUND;
-		return new ResponseEntity<>(status);
+		return ResponseEntity.status(status).build();
 	}
 	
 

@@ -19,9 +19,8 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -32,8 +31,7 @@ import pl.springrest.domain.user.User;
 import pl.springrest.domain.user.UserService;
 import pl.springrest.dto.UserDTO;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringBootTest
+@RunWith(SpringRunner.class)
 public class UserControllerTest {
 
 	private MockMvc mockMvc;
@@ -51,26 +49,28 @@ public class UserControllerTest {
 	public void beforeMethod() {
 		MockitoAnnotations.initMocks(this);
 		mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
-		user = new User(1, "Jan", "Nowak", "jann", "1234", "jann@gmail.com");
-		userDto = new UserDTO(1L, "Jan", "Nowak", "jann", "jann@gmail.com");
+		user = new User(1, "Jan", "Nowak", "login", "password", "user@email.com");
+		userDto = new UserDTO(1L, "Jan", "Nowak", "login", "user@email.com");
 	}
 
 	@Test
 	public void whenUserIsFoundThanHttpStatusIsOK() throws Exception {
-		when(userService.getUserByID(1)).thenReturn(userDto);
+		when(userService.getUserBy(user.getId())).thenReturn(userDto);
 		mockMvc.perform(get("/user/{1}", 1)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-				.andExpect(jsonPath("$.id", is(1)))
-				.andExpect(jsonPath("$.firstName", is("Jan")));
-		verify(userService, times(1)).getUserByID(1);
+				.andExpect(jsonPath("$.id", is(userDto.getId())))
+				.andExpect(jsonPath("$.firstName", is(userDto.getFirstName())))
+				.andExpect(jsonPath("$.login", is(userDto.getLogin())));
+		verify(userService, times(1)).getUserBy(user.getId());
 		verifyNoMoreInteractions(userService);
 	}
 
 	@Test
 	public void whenUserIsNotFoundThanHttpStatusIsNOTFOUND() throws Exception {
-		when(userService.getUserByID(2)).thenReturn(null);
-		mockMvc.perform(get("/user/{id}", 2)).andExpect(status().isNotFound());
-		verify(userService, times(1)).getUserByID(2);
+		when(userService.getUserBy(2)).thenReturn(null);
+		mockMvc.perform(get("/user/{id}", 2))
+				.andExpect(status().isNotFound());
+		verify(userService, times(1)).getUserBy(2);
 		verifyNoMoreInteractions(userService);
 
 	}
@@ -89,7 +89,8 @@ public class UserControllerTest {
 	@Test
 	public void duplicateUser() throws JsonProcessingException, Exception {
 		when(userService.saveUser(user)).thenReturn(null);
-		mockMvc.perform(post("/user/register").contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post("/user/register")
+					.contentType(MediaType.APPLICATION_JSON)
 					.content(new ObjectMapper().writeValueAsString(user)))
 				.andExpect(status().isConflict());
 		verify(userService, times(1)).saveUser(user);
@@ -102,7 +103,7 @@ public class UserControllerTest {
 		mockMvc.perform(post("/user/register")
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(new ObjectMapper().writeValueAsString(user)))
-				.andExpect(status().isBadRequest());
+				.andExpect(status().isBadRequest()).andReturn();
 	}
 
 	@Test
