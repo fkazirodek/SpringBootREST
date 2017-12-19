@@ -1,5 +1,7 @@
 package pl.springrest.dto;
 
+import pl.springrest.domain.user.Address;
+
 public class UserDTO {
 
 	private Long id;
@@ -8,6 +10,8 @@ public class UserDTO {
 	private String login;
 	private String email;
 
+	private Address address;
+	
 	public UserDTO() {
 	}
 
@@ -44,6 +48,14 @@ public class UserDTO {
 
 	public String getEmail() {
 		return email;
+	}
+	
+	public Address getAddress() {
+		return address;
+	}
+	
+	public void setAddress(Address address) {
+		this.address = address;
 	}
 
 }

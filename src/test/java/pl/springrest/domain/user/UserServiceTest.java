@@ -57,13 +57,38 @@ public class UserServiceTest {
 	}
 
 	@Test
-	public void saveUserShouldReturnUserDTOIfUserNotExistInDB() {
+	public void saveUserWhenUserNotExistInDB() {
 		when(userRepository.findByLogin(user.getLogin())).thenReturn(null);
 		when(userRepository.save(user)).thenReturn(user);
 		UserDTO userDTO = userService.saveUser(user);
 		compareUser(userDTO);
 	}
-
+	
+	@Test
+	public void saveUserShouldReturnNullIfUserExistInDB() {
+		when(userRepository.findByLogin(user.getLogin())).thenReturn(user);
+		UserDTO userDTO = userService.saveUser(user);
+		assertNull(userDTO);
+	}
+	
+	@Test
+	public void updateAddressWhenUserExist() {
+		Address address = new Address("Poland", "Warsaw", "Str", "00-000");
+		user.setAddress(address);
+		when(userRepository.findOne(user.getId())).thenReturn(user);
+		UserDTO userDTO = userService.updateAddress(user.getAddress(), user.getId());
+		compareUser(userDTO);
+		
+	}
+	
+	@Test
+	public void noUpdateAddressWhenAddressNull() {
+		when(userRepository.findOne(user.getId())).thenReturn(user);
+		UserDTO userDTO = userService.updateAddress(user.getAddress(), user.getId());
+		assertNull(userDTO.getAddress());
+		
+	}
+	
 	private void compareUser(UserDTO userDTO) {
 		assertNotNull(userDTO);
 		assertThat(userDTO).isEqualToComparingFieldByField(user);

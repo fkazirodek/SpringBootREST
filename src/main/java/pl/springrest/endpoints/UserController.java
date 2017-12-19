@@ -4,7 +4,6 @@ import java.net.URI;
 
 import javax.validation.Valid;
 
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +12,7 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -40,16 +40,24 @@ public class UserController {
 	}
 
 	@PostMapping(path = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> registerUser(@Valid @RequestBody User user, BindingResult bindingResult, UriComponentsBuilder uriBuilder) {
-		if(bindingResult.hasErrors()) {
+	public ResponseEntity<?> registerUser(@Valid @RequestBody User user, BindingResult bindingResult,
+			UriComponentsBuilder uriBuilder) {
+		if (bindingResult.hasErrors())
 			return new ResponseEntity<>(bindingResult.getAllErrors(), HttpStatus.BAD_REQUEST);
-		}
 		UserDTO userDto = userService.saveUser(user);
 		if (userDto == null)
 			return ResponseEntity.status(HttpStatus.CONFLICT).build();
-		HttpHeaders httpHeaders = new HttpHeaders();
 		URI locationUri = uriBuilder.path("/user/").path(userDto.getId().toString()).build().toUri();
-		httpHeaders.setLocation(locationUri);
+		return ResponseEntity.status(HttpStatus.CREATED).location(locationUri).build();
+	}
+
+	@PutMapping(path = "/{id}/update")
+	public ResponseEntity<Void> updateUser(@RequestBody User user, @PathVariable long id,
+			UriComponentsBuilder uriBuilder) {
+		UserDTO userDto = userService.updateAddress(user.getAddress(), id);
+		if (userDto == null)
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+		URI locationUri = uriBuilder.path("/user/").path(userDto.getId().toString()).build().toUri();
 		return ResponseEntity.status(HttpStatus.CREATED).location(locationUri).build();
 	}
 
@@ -58,6 +66,5 @@ public class UserController {
 		HttpStatus status = userService.deleteUser(id) ? HttpStatus.OK : HttpStatus.NOT_FOUND;
 		return ResponseEntity.status(status).build();
 	}
-	
 
 }

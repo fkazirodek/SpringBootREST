@@ -1,6 +1,6 @@
 package pl.springrest.endpoints;
 
-import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.*;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -58,7 +58,7 @@ public class UserControllerTest {
 		when(userService.getUserBy(user.getId())).thenReturn(userDto);
 		mockMvc.perform(get("/user/{1}", 1)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-				.andExpect(jsonPath("$.id", is(userDto.getId())))
+				.andExpect(jsonPath("$.id", is(1)))
 				.andExpect(jsonPath("$.firstName", is(userDto.getFirstName())))
 				.andExpect(jsonPath("$.login", is(userDto.getLogin())));
 		verify(userService, times(1)).getUserBy(user.getId());
@@ -78,7 +78,8 @@ public class UserControllerTest {
 	@Test
 	public void userSuccessfullyCreated() throws JsonProcessingException, Exception {
 		when(userService.saveUser(user)).thenReturn(userDto);
-		mockMvc.perform(post("/user/register").contentType(MediaType.APPLICATION_JSON)
+		mockMvc.perform(post("/user/register")
+						.contentType(MediaType.APPLICATION_JSON)
 						.content(new ObjectMapper().writeValueAsString(user)))
 				.andExpect(status().isCreated())
 				.andExpect(header().stringValues("location", "http://localhost/user/1"));
@@ -103,9 +104,9 @@ public class UserControllerTest {
 		mockMvc.perform(post("/user/register")
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(new ObjectMapper().writeValueAsString(user)))
-				.andExpect(status().isBadRequest()).andReturn();
+				.andExpect(status().isBadRequest());
 	}
-
+	
 	@Test
 	public void userSuccessfullyDeleted() throws Exception {
 		when(userService.deleteUser(1)).thenReturn(true);

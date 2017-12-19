@@ -1,6 +1,8 @@
 package pl.springrest.domain.user;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import javax.transaction.Transactional;
 
@@ -43,6 +45,16 @@ public class UserRepositoryTest {
 	public void ifUserNotFoundShouldReturnNull() {
 		User foundUser = userRepository.findByLogin(user.getLogin());
 		assertEquals(null, foundUser);
+	}
+	
+	@Test
+	public void updatedAddressNotNull() {
+		Address address = new Address("Poland", "Warsaw", "Str", "00-000");
+		User foundUser = userRepository.findOne(user.getId());
+		foundUser.setAddress(address);
+		User user2 = userRepository.findOne(user.getId());
+		assertNotNull(user2.getAddress());
+		assertThat(user2.getAddress()).isEqualTo(address);
 	}
 	
 	@Test
