@@ -7,7 +7,10 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
+import javax.validation.constraints.Max;
+import javax.validation.constraints.Size;
 
+import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.NotEmpty;
 
 @Entity
@@ -19,22 +22,26 @@ public class User {
 	@Column(name="user_id")
 	private Long id;
 	
+	@NotEmpty(message="{pl.springrest.domain.user.User.firstName.NotEmpty}")
+	@Max(value=15, message="{pl.springrest.domain.user.User.firstName.Max}")
 	@Column(name="firstname")
 	private String firstName;
 	
-	@Column(name="lastname")
+	@Column(name="lastname", nullable=true)
 	private String lastName;
 	
-	@NotEmpty
-	@Column(name="login", unique=true)
+	@NotEmpty(message="{pl.springrest.domain.user.User.login.NotEmpty}")
+	@Size(min=3, max=15, message="{pl.springrest.domain.user.User.login.Size}")
+	@Column(unique=true)
 	private String login;
 	
-	@NotEmpty
-	@Column(name="password")
+	@NotEmpty(message="{pl.springrest.domain.user.User.password.NotEmpty}")
+	@Size(min=6,max=15, message="{pl.springrest.domain.user.User.password.Size{")
 	private String password;
 	
-	@NotEmpty
-	@Column(name="email", unique=true)
+	@NotEmpty(message="{pl.springrest.domain.user.User.email.NotEmpty}")
+	@Email(message="{pl.springrest.domain.user.User.email.Email}")
+	@Column(unique=true)
 	private String email;
 	
 	@Embedded

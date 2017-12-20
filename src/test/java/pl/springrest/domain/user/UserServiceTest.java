@@ -12,8 +12,8 @@ import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import pl.springrest.converters.UserDTOConverter;
 import pl.springrest.dto.UserDTO;
-import pl.springrest.dto_converter.UserDTOConverter;
 
 @RunWith(SpringRunner.class)
 public class UserServiceTest {

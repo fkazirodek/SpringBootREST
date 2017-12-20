@@ -1,4 +1,4 @@
-package pl.springrest.dto_converter;
+package pl.springrest.converters;
 
 import org.springframework.stereotype.Component;
 

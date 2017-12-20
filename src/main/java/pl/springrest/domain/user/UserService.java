@@ -4,8 +4,8 @@ import javax.transaction.Transactional;
 
 import org.springframework.stereotype.Service;
 
+import pl.springrest.converters.UserDTOConverter;
 import pl.springrest.dto.UserDTO;
-import pl.springrest.dto_converter.UserDTOConverter;
 
 @Service
 @Transactional

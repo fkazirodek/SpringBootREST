@@ -1,4 +1,4 @@
-package pl.springrest.dto_converter;
+package pl.springrest.converters;
 
 import java.util.Collection;
 import java.util.stream.Collectors;

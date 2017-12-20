@@ -1,6 +1,7 @@
 package pl.springrest.endpoints;
 
 import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -19,9 +20,11 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -32,6 +35,7 @@ import pl.springrest.domain.user.UserService;
 import pl.springrest.dto.UserDTO;
 
 @RunWith(SpringRunner.class)
+@SpringBootTest
 public class UserControllerTest {
 
 	private MockMvc mockMvc;
@@ -105,6 +109,28 @@ public class UserControllerTest {
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(new ObjectMapper().writeValueAsString(user)))
 				.andExpect(status().isBadRequest());
+	}
+	
+	@Test
+	public void whenLoginFieldIsNotValidThanReturnLoginMessages() throws JsonProcessingException, Exception {
+		String loginSizeMessage = "{\"login\":[\"Login lenght must be between 3 and 15\"]}";
+		user.setLogin("a");
+		MvcResult result = mockMvc.perform(post("/user/register")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(new ObjectMapper().writeValueAsString(user)))
+				.andReturn();
+		assertEquals(loginSizeMessage, result.getResponse().getContentAsString());
+	}
+	
+	@Test
+	public void whenEmailFieldIsNotValidThanReturnEmailMessages() throws JsonProcessingException, Exception {
+		String emailMessage = "{\"email\":[\"You must enter the correct e-mail address\"]}";
+		user.setEmail("a");
+		MvcResult result = mockMvc.perform(post("/user/register")
+					.contentType(MediaType.APPLICATION_JSON)
+					.content(new ObjectMapper().writeValueAsString(user)))
+				.andReturn();
+		assertEquals(emailMessage, result.getResponse().getContentAsString());
 	}
 	
 	@Test
