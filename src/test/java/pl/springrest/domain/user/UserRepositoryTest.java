@@ -3,6 +3,7 @@ package pl.springrest.domain.user;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import javax.transaction.Transactional;
 
@@ -26,12 +27,12 @@ public class UserRepositoryTest {
 	
 	@Before
 	public void beforeMethod() {
-		user = new User(1L, "fn", "ln", "login", "pass", "user@email.com");
+		user = new User(1L, "fn", "ln", "login", "password", "user@email.com");
 	}
 	
 	@After
 	public void afterMethod() {
-		userRepository.flush();
+		userRepository.deleteAll();
 	}
 	
 	@Test
@@ -44,7 +45,7 @@ public class UserRepositoryTest {
 	@Test
 	public void ifUserNotFoundShouldReturnNull() {
 		User foundUser = userRepository.findByLogin(user.getLogin());
-		assertEquals(null, foundUser);
+		assertNull(foundUser);
 	}
 	
 	@Test
@@ -62,6 +63,6 @@ public class UserRepositoryTest {
 		userRepository.save(user);
 		userRepository.delete(user);
 		User foundUser = userRepository.findByLogin(user.getLogin());
-		assertEquals(null, foundUser);
+		assertNull(foundUser);
 	}
 }

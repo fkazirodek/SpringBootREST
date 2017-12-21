@@ -3,23 +3,28 @@ package pl.springrest.converters;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-/**
- * This interface allows convert database objects to DTO or DTO to database objects
- *
- * @param <F> convert from  
- * @param <T> convert to 
- */
-public interface DTOConverter<F,T> {
+import org.springframework.core.convert.converter.Converter;
 
-	T convert(F from);
-	
+/**
+ * This interface allows convert database objects to DTO or DTO to database
+ * objects
+ *
+ * @param <S>
+ *            source
+ * @param <T>
+ *            targer
+ */
+public interface DTOConverter<S, T> extends Converter<S, T> {
+
 	/**
 	 * Convert all elements in collection
 	 * 
-	 * @param elements to convert
+	 * @param elements
+	 *            to convert
 	 * @return list of elements converted to DTO or database objects
 	 */
-	default Collection<T> convertAll(Collection<F> elements) {
+	default Collection<T> convertAll(Collection<S> elements) {
 		return elements.stream().map(e -> convert(e)).collect(Collectors.toList());
 	}
+
 }

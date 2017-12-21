@@ -66,7 +66,7 @@ public class UserService {
 	 * @param address
 	 *            Address that will be added to the user
 	 * @param id
-	 *            ID of the user to whom the address will be added
+	 *            ID of the user to whom the address will be add
 	 * @return return UserDTO when address was update successfully and addres is
 	 *         not null or null when user not found in DB
 	 */

@@ -7,7 +7,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.Max;
 import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.Email;
@@ -23,7 +22,7 @@ public class User {
 	private Long id;
 	
 	@NotEmpty(message="{pl.springrest.domain.user.User.firstName.NotEmpty}")
-	@Max(value=15, message="{pl.springrest.domain.user.User.firstName.Max}")
+	@Size(max=15, message="{pl.springrest.domain.user.User.firstName.Max}")
 	@Column(name="firstname")
 	private String firstName;
 	
