@@ -19,35 +19,40 @@ import javax.validation.constraints.Size;
 
 import org.hibernate.validator.constraints.NotEmpty;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+
+import pl.springrest.converters.LocalDateDeserializer;
+
 @Entity
 public class Film {
 
 	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	@Column(name="film_id")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "film_id")
 	private Long id;
-	
-	@NotEmpty(message="{pl.springrest.domain.film.Film.title.NotEmpty}")
-	@Column(unique=true)
+
+	@NotEmpty(message = "{pl.springrest.domain.film.Film.title.NotEmpty}")
+	@Column(unique = true)
 	private String title;
-	
-	@NotEmpty(message="{pl.springrest.domain.film.Film.description.NotEmpty}")
-	@Size(min=20, max=250, message="{pl.springrest.domain.film.Film.description.Size}")
+
+	@NotEmpty(message = "{pl.springrest.domain.film.Film.description.NotEmpty}")
+	@Size(min = 20, max = 250, message = "{pl.springrest.domain.film.Film.description.Size}")
 	private String description;
-	
-	@NotEmpty(message="{pl.springrest.domain.film.Film.category.NotEmpty}")
+
+	@NotEmpty(message = "{pl.springrest.domain.film.Film.category.NotEmpty}")
 	private String category;
-	
-	@NotNull(message="{pl.springrest.domain.film.Film.yearRelease.NotNull}")
-	@Column(name="year_release")
+
+	@NotNull(message = "{pl.springrest.domain.film.Film.yearRelease.NotNull}")
+	@Column(name = "year_release")
+	@JsonDeserialize(using=LocalDateDeserializer.class)
 	private LocalDate dateRelease;
-	
-	@Column(nullable=true)
+
+	@Column(nullable = true)
 	private double rating;
-	
+
 	@ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
-	@JoinTable(joinColumns=@JoinColumn(name="film_id", referencedColumnName="film_id"),
-				inverseJoinColumns=@JoinColumn(name="actor_id", referencedColumnName="actor_id"))	
+	@JoinTable(joinColumns = @JoinColumn(name = "film_id", referencedColumnName = "film_id"), 
+				inverseJoinColumns = @JoinColumn(name = "actor_id", referencedColumnName = "actor_id"))
 	private Set<Actor> actors = new HashSet<>();
 
 	public Film() {
@@ -62,10 +67,6 @@ public class Film {
 
 	public Long getId() {
 		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
 	}
 
 	public String getTitle() {
@@ -107,11 +108,11 @@ public class Film {
 	public void setActors(Set<Actor> actors) {
 		this.actors = actors;
 	}
-	
+
 	public double getRating() {
 		return rating;
 	}
-	
+
 	public void setRating(double rating) {
 		this.rating = rating;
 	}

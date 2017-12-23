@@ -27,7 +27,7 @@ public class UserRepositoryTest {
 	
 	@Before
 	public void beforeMethod() {
-		user = new User(1L, "fn", "ln", "login", "password", "user@email.com");
+		user = new User("fn", "ln", "login", "password", "user@email.com");
 	}
 	
 	@After
@@ -51,9 +51,9 @@ public class UserRepositoryTest {
 	@Test
 	public void updatedAddressNotNull() {
 		Address address = new Address("Poland", "Warsaw", "Str", "00-000");
-		User foundUser = userRepository.findOne(user.getId());
+		User foundUser = userRepository.save(user);
 		foundUser.setAddress(address);
-		User user2 = userRepository.findOne(user.getId());
+		User user2 = userRepository.findOne(1L);
 		assertNotNull(user2.getAddress());
 		assertThat(user2.getAddress()).isEqualTo(address);
 	}

@@ -12,5 +12,4 @@ public class FilmDTOConverter implements DTOConverter<Film, FilmDTO> {
 	public FilmDTO convert(Film film) {
 		return new FilmDTO(film.getTitle(), film.getDescription(), film.getCategory(), film.getYearRelease());
 	}
-
 }

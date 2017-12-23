@@ -2,8 +2,11 @@ package pl.springrest.endpoints;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDate;
@@ -16,10 +19,15 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import pl.springrest.domain.film.Film;
 import pl.springrest.domain.film.FilmService;
 import pl.springrest.dto.FilmDTO;
 
@@ -35,7 +43,9 @@ public class FilmControllerTest {
 	private FilmController filmController;
 	
 	private List<FilmDTO> films;
-	private FilmDTO film1;
+	private Film film;
+	private FilmDTO filmDto1;
+	private FilmDTO filmDto2;
 	private final String category = "action";
 	private final int page = 0;
 	private final int size = 10;
@@ -44,11 +54,12 @@ public class FilmControllerTest {
 	public void beforeMethod() {
 		MockitoAnnotations.initMocks(this);
 		mockMvc = MockMvcBuilders.standaloneSetup(filmController).build();
-		film1 = new FilmDTO("Title1", "film description", "action", LocalDate.of(2015, 4, 28));
-		FilmDTO film2 = new FilmDTO("Title2", "film description", "action", LocalDate.of(2016, 9, 28));
+		film = new Film("Title1", "film description", "action", LocalDate.of(2015, 4, 28));
+		filmDto1 = new FilmDTO("Title1", "film description", "action", LocalDate.of(2015, 4, 28));
+		filmDto2 = new FilmDTO("Title2", "film description", "action", LocalDate.of(2016, 9, 28));
 		films = new ArrayList<>();
-		films.add(film1);
-		films.add(film2);
+		films.add(filmDto1);
+		films.add(filmDto2);
 	}
 	
 	@Test
@@ -89,16 +100,28 @@ public class FilmControllerTest {
 	
 	@Test
 	public void whenFilmFoundByTitleThanStatusOK() throws Exception {
-		String title = film1.getTitle();
-		when(filmService.getFilmByTitle(title)).thenReturn(film1);
+		String title = filmDto1.getTitle();
+		when(filmService.getFilmByTitle(title)).thenReturn(filmDto1);
 		mockMvc.perform(get("/films/film/{title}", title))
 							.andExpect(status().isOk());
 	}
 	
 	@Test
 	public void invokedMethodgetFilmByTitleWithCorrectArguments() throws Exception {
-		String title = film1.getTitle();
+		String title = filmDto1.getTitle();
 		mockMvc.perform(get("/films/film/{title}", title));
 		verify(filmService, times(1)).getFilmByTitle(title);
 	}
+	
+//	@Test
+//	public void filmSuccessfullyCreated() throws JsonProcessingException, Exception {
+//		when(filmService.saveFilm(film)).thenReturn(filmDto1);
+//		mockMvc.perform(post("/films/film/add")
+//						.contentType(MediaType.APPLICATION_JSON)
+//						.content(new ObjectMapper().writeValueAsString(film)))
+//				.andExpect(status().isCreated())
+//				.andExpect(header().stringValues("location", "http://localhost/films/film/Title1"));
+//		verify(filmService, times(1)).saveFilm(film);
+//		verifyNoMoreInteractions(filmService);
+//	}
 }

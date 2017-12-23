@@ -1,10 +1,6 @@
 package pl.springrest.endpoints;
 
 import java.net.URI;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
 
 import javax.validation.Valid;
 
@@ -14,16 +10,13 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -62,7 +55,7 @@ public class UserController {
 		return ResponseEntity.status(HttpStatus.CREATED).location(locationUri).build();
 	}
 
-	@PutMapping(path = "/{id}/update", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> updateUser(@RequestBody User user, 
 											@PathVariable long id,
 											UriComponentsBuilder uriBuilder) throws ResourceNotFoundException {
@@ -73,20 +66,11 @@ public class UserController {
 		return ResponseEntity.status(HttpStatus.CREATED).location(locationUri).build();
 	}
 
-	@DeleteMapping(path = "/{id}/delete")
+	@DeleteMapping(path = "/{id}")
 	public ResponseEntity<Void> deleteUser(@PathVariable long id) throws ResourceNotFoundException {
 		if (userService.deleteUser(id) == false)
 			throw new ResourceNotFoundException("Not found user to deleted");
 		return ResponseEntity.ok().build();
 	}
 
-	@ExceptionHandler(BindException.class)
-	@ResponseStatus(value=HttpStatus.BAD_REQUEST)
-	protected Map<String, Set<String>> handleMethodArgumentNotValidException(BindException ex) {
-		List<FieldError> fieldErrors = ex.getBindingResult().getFieldErrors();
-		Map<String, Set<String>> errorsMap = fieldErrors.stream().collect(
-						Collectors.groupingBy(FieldError::getField,
-						Collectors.mapping(FieldError::getDefaultMessage, Collectors.toSet())));
-		return errorsMap;
-	}
 }

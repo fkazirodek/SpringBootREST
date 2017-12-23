@@ -68,4 +68,18 @@ public class FilmService {
 		return filmDTOConverter.convert(film);
 	}
 
+	/**
+	 * Save film in database if film not exist
+	 * 
+	 * @param user
+	 *            Film to save
+	 * @return FilmDTO or null if film already exist in database
+	 */
+	public FilmDTO saveFilm(Film film) {
+		Film filmFound = filmRepository.findByTitle(film.getTitle());
+		if (filmFound != null)
+			return null;
+		return filmDTOConverter.convert(filmRepository.save(film));
+	}
+
 }

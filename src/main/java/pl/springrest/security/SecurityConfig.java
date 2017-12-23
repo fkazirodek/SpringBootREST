@@ -13,7 +13,11 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 		auth.inMemoryAuthentication()
 				.withUser("user")
 				.password("pass")
-				.roles("USER");
+				.roles("USER")
+			.and()
+				.withUser("admin")
+				.password("admin")
+				.roles("ADMIN");
 	}
 	
 	@Override
@@ -22,7 +26,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 				.authorizeRequests()
 					.antMatchers("/").permitAll()
 					.anyRequest().authenticated()
-					.and().httpBasic();
+					.and().httpBasic().and().csrf().disable();
 			
 	}
 	
