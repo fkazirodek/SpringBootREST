@@ -1,4 +1,4 @@
-package pl.springrest.domain.film;
+package pl.springrest.domain.actor;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;

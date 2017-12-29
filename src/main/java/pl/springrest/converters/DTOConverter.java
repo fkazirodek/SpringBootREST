@@ -1,6 +1,7 @@
 package pl.springrest.converters;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.core.convert.converter.Converter;
@@ -23,7 +24,7 @@ public interface DTOConverter<S, T> extends Converter<S, T> {
 	 *            to convert
 	 * @return list of elements converted to DTO or database objects
 	 */
-	default Collection<T> convertAll(Collection<S> elements) {
+	default List<T> convertAll(Collection<S> elements) {
 		return elements.stream().map(e -> convert(e)).collect(Collectors.toList());
 	}
 

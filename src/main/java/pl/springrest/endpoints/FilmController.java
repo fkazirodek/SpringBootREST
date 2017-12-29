@@ -9,7 +9,6 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.annotation.Secured;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -61,7 +60,6 @@ public class FilmController {
 		return film;
 	}
 	
-	@Secured("ROLE_ADMIN")
 	@PostMapping(path="/film/add", consumes=MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> addNewFilm(@Valid @RequestBody Film film, 
 								BindingResult bindingResult, 
@@ -71,7 +69,7 @@ public class FilmController {
 		FilmDTO filmDTO = filmService.saveFilm(film);
 		if(filmDTO == null)
 			return ResponseEntity.status(HttpStatus.CONFLICT).build();
-		URI location = uriBuilder.path("/films/film/add").path(filmDTO.getTitle()).build().toUri();
-		return ResponseEntity.status(HttpStatus.CREATED).location(location).build();		
+		URI location = uriBuilder.path("/films/film/").path(filmDTO.getTitle()).build().toUri();
+		return ResponseEntity.created(location).build();		
 	}
 }

@@ -24,7 +24,7 @@ public class UserService {
 	 * 
 	 * @param id
 	 *            user id
-	 * @return UserDTO or null if user not exist
+	 * @return UserDTO or null if user not found
 	 */
 	public UserDTO getUserBy(long id) {
 		User user = userRepository.findOne(id);
@@ -38,7 +38,7 @@ public class UserService {
 	 * 
 	 * @param id
 	 *            user login
-	 * @return UserDTO or null if user not exist
+	 * @return UserDTO or null if user not found
 	 */
 	public UserDTO getUserBy(String login) {
 		User user = userRepository.findByLogin(login);

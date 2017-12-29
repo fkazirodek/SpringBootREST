@@ -71,7 +71,7 @@ public class FilmService {
 	/**
 	 * Save film in database if film not exist
 	 * 
-	 * @param user
+	 * @param film
 	 *            Film to save
 	 * @return FilmDTO or null if film already exist in database
 	 */

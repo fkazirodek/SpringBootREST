@@ -22,6 +22,7 @@ import org.hibernate.validator.constraints.NotEmpty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
 import pl.springrest.converters.LocalDateDeserializer;
+import pl.springrest.domain.actor.Actor;
 
 @Entity
 public class Film {
