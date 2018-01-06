@@ -17,7 +17,7 @@ public class Actor {
 	@Column(name = "firstname", nullable = false)
 	private String firstName;
 
-	@Column(name = "lastname", nullable = false)
+	@Column(name = "lastname", unique=true, nullable = false)
 	private String lastName;
 
 	public Actor() {

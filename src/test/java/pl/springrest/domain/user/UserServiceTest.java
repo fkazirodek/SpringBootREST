@@ -5,11 +5,16 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.when;
 
+import java.util.Optional;
+
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import pl.springrest.converters.UserDTOConverter;
@@ -24,10 +29,12 @@ public class UserServiceTest {
 	private UserRepository userRepository;
 
 	private User user;
+	
+	@Rule
+	public ExpectedException expectedException = ExpectedException.none();
 
 	@Before
 	public void beforeMethod() {
-		MockitoAnnotations.initMocks(this);
 		userDTOConverter = new UserDTOConverter();
 		userService = new UserService(userRepository, userDTOConverter);
 		user = new User(1L, "fn", "ln", "login", "pass", "user@email.com");
@@ -43,17 +50,18 @@ public class UserServiceTest {
 
 	@Test
 	public void getUserByLoginShouldReturnUserDTO() {
+		Optional<User> userOptional = Optional.of(user);
 		String login = user.getLogin();
-		when(userRepository.findByLogin(login)).thenReturn(user);
+		when(userRepository.findByLogin(login)).thenReturn(userOptional);
 		UserDTO userDTO = userService.getUserBy(login);
 		compareUser(userDTO);
 	}
 
 	@Test
-	public void getUserByShouldReturnNullIfUserNotExist() {
+	public void whenGetUserByIdNotFoundUserShouldThrowsResourceNotFoundException() {
 		when(userRepository.findOne(user.getId())).thenReturn(null);
-		UserDTO userDTO = userService.getUserBy(user.getId());
-		assertNull(userDTO);
+		expectedException.expect(ResourceNotFoundException.class);
+		userService.getUserBy(user.getId());
 	}
 
 	@Test
@@ -65,10 +73,10 @@ public class UserServiceTest {
 	}
 	
 	@Test
-	public void saveUserShouldReturnNullIfUserExistInDB() {
-		when(userRepository.findByLogin(user.getLogin())).thenReturn(user);
-		UserDTO userDTO = userService.saveUser(user);
-		assertNull(userDTO);
+	public void whenSaveUserAndUserExistShouldThrowsDataIntegrityViolationException() {
+		when(userRepository.save(user)).thenThrow(new DataIntegrityViolationException("Conflict"));
+		expectedException.expect(DataIntegrityViolationException.class);
+		userService.saveUser(user);
 	}
 	
 	@Test

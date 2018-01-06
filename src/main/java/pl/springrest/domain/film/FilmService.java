@@ -4,8 +4,10 @@ import java.util.List;
 
 import javax.transaction.Transactional;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import pl.springrest.converters.FilmDTOConverter;
@@ -30,10 +32,14 @@ public class FilmService {
 	 *            number of page
 	 * @param size
 	 *            page size
-	 * @return List<FilmDTO> or null if films not found
+	 * @return List<FilmDTO>
+	 * @throws ResourceNotFoundException
+	 *             if films not found
 	 */
-	public List<FilmDTO> getAllFilms(int page, int size) {
+	public List<FilmDTO> getAllFilms(int page, int size) throws ResourceNotFoundException {
 		Page<Film> films = filmRepository.findAll(new PageRequest(page, size));
+		if (films.getContent() == null)
+			throw new ResourceNotFoundException("Films not found");
 		return films.map(filmDTOConverter::convert).getContent();
 	}
 
@@ -46,11 +52,14 @@ public class FilmService {
 	 *            page size
 	 * @param category
 	 *            film's category
-	 * @return List<FilmDTO> or null if films not found
+	 * @return List<FilmDTO>
+	 * @throws ResourceNotFoundException
+	 *             if films not found
 	 */
-	public List<FilmDTO> getFilmsByCategory(String category, int page, int size) {
-		Page<Film> filmsByCategory = filmRepository.findByCategoryOrderByRatingDesc(category,
-				new PageRequest(page, size));
+	public List<FilmDTO> getFilmsByCategory(String category, int page, int size) throws ResourceNotFoundException {
+		Page<Film> filmsByCategory = filmRepository.findByCategoryOrderByRatingDesc(category, new PageRequest(page, size));
+		if (filmsByCategory.getContent() == null)
+			throw new ResourceNotFoundException("Films not found");
 		return filmsByCategory.map(filmDTOConverter::convert).getContent();
 	}
 
@@ -59,12 +68,14 @@ public class FilmService {
 	 * 
 	 * @param title
 	 *            film title
-	 * @return FilmDTO or null when film not found
+	 * @return FilmDTO
+	 * @throws ResourceNotFoundException
+	 *             when film not found
 	 */
-	public FilmDTO getFilmByTitle(String title) {
-		Film film = filmRepository.findByTitle(title);
-		if (film == null)
-			return null;
+	public FilmDTO getFilmByTitle(String title) throws ResourceNotFoundException {
+		Film film = filmRepository
+						.findByTitle(title)
+							.orElseThrow(ResourceNotFoundException::new);
 		return filmDTOConverter.convert(film);
 	}
 
@@ -73,12 +84,11 @@ public class FilmService {
 	 * 
 	 * @param film
 	 *            Film to save
-	 * @return FilmDTO or null if film already exist in database
+	 * @return FilmDTO
+	 * @throws DataIntegrityViolationException
+	 *             if film already exist in database
 	 */
-	public FilmDTO saveFilm(Film film) {
-		Film filmFound = filmRepository.findByTitle(film.getTitle());
-		if (filmFound != null)
-			return null;
+	public FilmDTO saveFilm(Film film) throws DataIntegrityViolationException {
 		return filmDTOConverter.convert(filmRepository.save(film));
 	}
 

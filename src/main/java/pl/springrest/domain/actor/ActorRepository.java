@@ -1,6 +1,7 @@
 package pl.springrest.domain.actor;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -8,5 +9,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 interface ActorRepository extends JpaRepository<Actor, Long> {
 
-	List<Actor> findBylastName(String lastName);
+	Optional<List<Actor>> findBylastName(String lastName);
 }

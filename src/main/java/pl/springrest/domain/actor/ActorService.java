@@ -2,6 +2,8 @@ package pl.springrest.domain.actor;
 
 import java.util.List;
 
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import pl.springrest.converters.ActorDTOConverter;
@@ -23,14 +25,15 @@ public class ActorService {
 	 * 
 	 * @param lastName
 	 *            actor's last name
-	 * @return List of ActorDTO or null if actor not found
+	 * @return List of ActorDTO
+	 * @throws ResourceNotFoundException
+	 *             if actor not found
 	 */
-	public List<ActorDTO> findActorsBy(String lastName) {
-		List<Actor> actors = actorRepository.findBylastName(lastName);
-		if (actors == null)
-			return null;
-		else
-			return actorConverter.convertAll(actors);
+	public List<ActorDTO> findActorsBy(String lastName) throws ResourceNotFoundException {
+		List<Actor> actors = actorRepository
+								.findBylastName(lastName)
+									.orElseThrow(ResourceNotFoundException::new);
+		return actorConverter.convertAll(actors);
 	}
 
 	/**
@@ -38,12 +41,11 @@ public class ActorService {
 	 * 
 	 * @param actor
 	 *            Actor to save
-	 * @return ActorDTO or null if actor already exist in database
+	 * @return ActorDTO
+	 * @throws DataIntegrityViolationException
+	 *             if actor already exist in database
 	 */
-	public ActorDTO saveActor(Actor actor) {
-		List<Actor> foundActor = actorRepository.findBylastName(actor.getLastName());
-		if (foundActor != null && foundActor.contains(actor))
-			return null;
+	public ActorDTO saveActor(Actor actor) throws DataIntegrityViolationException {
 		return actorConverter.convert(actorRepository.save(actor));
 	}
 

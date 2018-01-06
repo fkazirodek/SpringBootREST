@@ -4,8 +4,6 @@ import java.net.URI;
 
 import javax.validation.Valid;
 
-import org.springframework.data.rest.webmvc.ResourceNotFoundException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
@@ -35,41 +33,39 @@ public class UserController {
 	}
 
 	@GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public UserDTO getUser(@PathVariable long id) throws ResourceNotFoundException {
-		UserDTO userDto = userService.getUserBy(id);
-		if (userDto == null)
-			throw new ResourceNotFoundException("User not found");
-		return userDto;
+	public UserDTO getUser(@PathVariable long id) {
+		return userService.getUserBy(id);
 	}
 
 	@PostMapping(path = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> registerUser(@Valid @RequestBody User user, 
-												BindingResult bindingResult,
-												UriComponentsBuilder uriBuilder) throws BindException {
+											BindingResult bindingResult,
+											UriComponentsBuilder uriBuilder) throws BindException {
 		if (bindingResult.hasErrors())
 			throw new BindException(bindingResult);
 		UserDTO userDto = userService.saveUser(user);
-		if (userDto == null)
-			return ResponseEntity.status(HttpStatus.CONFLICT).build();
-		URI locationUri = uriBuilder.path("/user/").path(userDto.getId().toString()).build().toUri();
-		return ResponseEntity.status(HttpStatus.CREATED).location(locationUri).build();
+		URI locationUri = uriBuilder
+							.path("/user/")
+							.path(userDto.getId().toString())
+								.build().toUri();
+		return ResponseEntity.created(locationUri).build();
 	}
 
 	@PutMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> updateUser(@RequestBody User user, 
 											@PathVariable long id,
-											UriComponentsBuilder uriBuilder) throws ResourceNotFoundException {
+											UriComponentsBuilder uriBuilder) {
 		UserDTO userDto = userService.updateAddress(user.getAddress(), id);
-		if (userDto == null)
-			throw new ResourceNotFoundException("User not found");
-		URI locationUri = uriBuilder.path("/user/").path(userDto.getId().toString()).build().toUri();
-		return ResponseEntity.status(HttpStatus.CREATED).location(locationUri).build();
+		URI locationUri = uriBuilder
+							.path("/user/")
+							.path(userDto.getId().toString())
+								.build().toUri();
+		return ResponseEntity.created(locationUri).build();
 	}
 
 	@DeleteMapping(path = "/{id}")
-	public ResponseEntity<Void> deleteUser(@PathVariable long id) throws ResourceNotFoundException {
-		if (userService.deleteUser(id) == false)
-			throw new ResourceNotFoundException("Not found user to deleted");
+	public ResponseEntity<Void> deleteUser(@PathVariable long id) {
+		userService.deleteUser(id);
 		return ResponseEntity.ok().build();
 	}
 

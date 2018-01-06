@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
 import java.time.LocalDate;
+import java.util.Optional;
 
 import javax.validation.ConstraintViolationException;
 
@@ -78,18 +79,18 @@ public class FilmRepositoryTest {
 	}
 	
 	@Test
-	public void ifFilmExistReturnFilm() {
+	public void ifFilmFoundReturnFilm() {
 		String title = film1.getTitle();
-		Film film = filmRepository.findByTitle(title);
-		assertNotNull(film);
-		assertThat(film).isEqualToComparingFieldByField(film1);
+		Optional<Film> film = filmRepository.findByTitle(title);
+		assertNotNull(film.get());
+		assertThat(film.get()).isEqualToComparingFieldByField(film1);
 	}
 	
 	@Test
-	public void ifFilmNotExistReturnNull() {
+	public void ifFilmNotFoundReturnNull() {
 		String title = "T";
-		Film film = filmRepository.findByTitle(title);
-		assertNull(film);
+		Optional<Film> film = filmRepository.findByTitle(title);
+		assertNull(film.orElse(null));
 	}
 	
 }

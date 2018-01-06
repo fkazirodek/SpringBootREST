@@ -5,8 +5,6 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import org.springframework.data.rest.webmvc.ResourceNotFoundException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
@@ -35,29 +33,20 @@ public class FilmController {
 	}
 
 	@GetMapping(produces = MediaType.APPLICATION_JSON_VALUE)
-	public List<FilmDTO> findAllFilms(@RequestParam int page, @RequestParam int size) throws ResourceNotFoundException {
-		List<FilmDTO> films = filmService.getAllFilms(page, size);
-		if (films == null)
-			throw new ResourceNotFoundException("Films not found");
-		return films;
+	public List<FilmDTO> findAllFilms(@RequestParam int page, @RequestParam int size) {
+		return filmService.getAllFilms(page, size);
 	}
 
 	@GetMapping(path = "/{category}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<FilmDTO> findFilmsByCategory(@PathVariable String category, 
 										@RequestParam int page, 
-										@RequestParam int size) throws ResourceNotFoundException {
-		List<FilmDTO> filmsByCategory = filmService.getFilmsByCategory(category, page, size);
-		if (filmsByCategory == null)
-			throw new ResourceNotFoundException("Films not found");
-		return filmsByCategory;
+										@RequestParam int size) {
+		return filmService.getFilmsByCategory(category, page, size);
 	}
 
 	@GetMapping(path = "/film/{title}", produces = MediaType.APPLICATION_JSON_VALUE)
-	public FilmDTO findFilmByTitle(@PathVariable String title) throws ResourceNotFoundException {
-		FilmDTO film = filmService.getFilmByTitle(title);
-		if (film == null)
-			throw new ResourceNotFoundException("Film " + title + " not found");
-		return film;
+	public FilmDTO findFilmByTitle(@PathVariable String title) {
+		return filmService.getFilmByTitle(title);
 	}
 	
 	@PostMapping(path="/film/add", consumes=MediaType.APPLICATION_JSON_VALUE)
@@ -67,9 +56,10 @@ public class FilmController {
 		if(bindingResult.hasErrors()) 
 			throw new BindException(bindingResult);
 		FilmDTO filmDTO = filmService.saveFilm(film);
-		if(filmDTO == null)
-			return ResponseEntity.status(HttpStatus.CONFLICT).build();
-		URI location = uriBuilder.path("/films/film/").path(filmDTO.getTitle()).build().toUri();
+		URI location = uriBuilder
+						.path("/films/film/")
+						.path(filmDTO.getTitle())
+							.build().toUri();
 		return ResponseEntity.created(location).build();		
 	}
 }

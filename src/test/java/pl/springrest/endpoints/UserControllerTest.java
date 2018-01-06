@@ -2,6 +2,8 @@ package pl.springrest.endpoints;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
+import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -21,6 +23,8 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
@@ -52,7 +56,10 @@ public class UserControllerTest {
 	@Before
 	public void beforeMethod() {
 		MockitoAnnotations.initMocks(this);
-		mockMvc = MockMvcBuilders.standaloneSetup(userController).build();
+		mockMvc = MockMvcBuilders
+					.standaloneSetup(userController)
+					.setControllerAdvice(new GlobalControllerExceptionHandler())
+					.build();
 		user = new User("Jan", "Nowak", "login", "password", "user@email.com");
 		userDto = new UserDTO(1L, "Jan", "Nowak", "login", "user@email.com");
 	}
@@ -71,7 +78,7 @@ public class UserControllerTest {
 
 	@Test
 	public void whenUserIsNotFoundThanHttpStatusIsNOTFOUND() throws Exception {
-		when(userService.getUserBy(2)).thenReturn(null);
+		when(userService.getUserBy(2)).thenThrow(new ResourceNotFoundException());
 		mockMvc.perform(get("/user/{id}", 2))
 				.andExpect(status().isNotFound());
 		verify(userService, times(1)).getUserBy(2);
@@ -93,13 +100,11 @@ public class UserControllerTest {
 
 	@Test
 	public void duplicateUser() throws JsonProcessingException, Exception {
-		when(userService.saveUser(user)).thenReturn(null);
+		when(userService.saveUser(user)).thenThrow(new DataIntegrityViolationException("Conflict"));
 		mockMvc.perform(post("/user/register")
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(new ObjectMapper().writeValueAsString(user)))
-				.andExpect(status().isConflict());
-		verify(userService, times(1)).saveUser(user);
-		verifyNoMoreInteractions(userService);
+				.andExpect(status().isConflict());	
 	}
 
 	@Test
@@ -152,15 +157,15 @@ public class UserControllerTest {
 	
 	@Test
 	public void userSuccessfullyDeleted() throws Exception {
-		when(userService.deleteUser(1)).thenReturn(true);
+		doNothing().when(userService).deleteUser(1);
 		mockMvc.perform(delete("/user/{id}", 1)).andExpect(status().isOk());
 		verify(userService, times(1)).deleteUser(1);
 		verifyNoMoreInteractions(userService);
 	}
 
 	@Test
-	public void noUserToDeleted() throws Exception {
-		when(userService.deleteUser(1)).thenReturn(false);
+	public void whenNoUserToDeletedThanThrowsResourceNotFoundException() throws Exception {
+		doThrow(new ResourceNotFoundException()).when(userService).deleteUser(1);
 		mockMvc.perform(delete("/user/{id}", 1)).andExpect(status().isNotFound());
 		verify(userService, times(1)).deleteUser(1);
 		verifyNoMoreInteractions(userService);

@@ -5,6 +5,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 
+import java.util.Optional;
+
 import javax.transaction.Transactional;
 
 import org.junit.After;
@@ -38,14 +40,14 @@ public class UserRepositoryTest {
 	@Test
 	public void findUserByLogin() {
 		userRepository.save(user);
-		User foundUser = userRepository.findByLogin(user.getLogin());
-		assertEquals(user, foundUser);
+		Optional<User> foundUser = userRepository.findByLogin(user.getLogin());
+		assertEquals(user, foundUser.get());
 	}
 	
 	@Test
 	public void ifUserNotFoundShouldReturnNull() {
-		User foundUser = userRepository.findByLogin(user.getLogin());
-		assertNull(foundUser);
+		Optional<User> foundUser = userRepository.findByLogin(user.getLogin());
+		assertNull(foundUser.orElse(null));
 	}
 	
 	@Test
@@ -62,7 +64,7 @@ public class UserRepositoryTest {
 	public void deleteUserFromDB() {
 		userRepository.save(user);
 		userRepository.delete(user);
-		User foundUser = userRepository.findByLogin(user.getLogin());
-		assertNull(foundUser);
+		Optional<User> foundUser = userRepository.findByLogin(user.getLogin());
+		assertNull(foundUser.orElse(null));
 	}
 }

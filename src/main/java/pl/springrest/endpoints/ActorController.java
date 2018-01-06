@@ -5,8 +5,6 @@ import java.util.List;
 
 import javax.validation.Valid;
 
-import org.springframework.data.rest.webmvc.ResourceNotFoundException;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
@@ -35,10 +33,7 @@ public class ActorController {
 
 	@GetMapping(value = "actor/{name}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<ActorDTO> getActorByName(@PathVariable String name) {
-		List<ActorDTO> actors = actorService.findActorsBy(name);
-		if (actors == null)
-			throw new ResourceNotFoundException("Actors not found");
-		return actors;
+		return actorService.findActorsBy(name);
 	}
 	
 	@PostMapping(value="actor/add", consumes=MediaType.APPLICATION_JSON_VALUE)
@@ -46,8 +41,6 @@ public class ActorController {
 		if(bindingResult.hasErrors())
 			throw new BindException(bindingResult);
 		ActorDTO actorDTO = actorService.saveActor(actor);
-		if(actorDTO == null) 
-			return ResponseEntity.status(HttpStatus.CONFLICT).build();
 		URI location = uriBuilder.path("/actors/actor/").path(actorDTO.getLastName()).build().toUri();
 		return ResponseEntity.created(location).build();
 	}

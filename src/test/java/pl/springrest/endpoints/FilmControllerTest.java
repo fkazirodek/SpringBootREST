@@ -2,11 +2,8 @@ package pl.springrest.endpoints;
 
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.time.LocalDate;
@@ -19,13 +16,10 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.springframework.http.MediaType;
+import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import pl.springrest.domain.film.Film;
 import pl.springrest.domain.film.FilmService;
@@ -53,7 +47,10 @@ public class FilmControllerTest {
 	@Before
 	public void beforeMethod() {
 		MockitoAnnotations.initMocks(this);
-		mockMvc = MockMvcBuilders.standaloneSetup(filmController).build();
+		mockMvc = MockMvcBuilders
+					.standaloneSetup(filmController)
+					.setControllerAdvice(new GlobalControllerExceptionHandler())
+					.build();
 		film = new Film("Title1", "film description", "action", LocalDate.of(2015, 4, 28));
 		filmDto1 = new FilmDTO("Title1", "film description", "action", LocalDate.of(2015, 4, 28));
 		filmDto2 = new FilmDTO("Title2", "film description", "action", LocalDate.of(2016, 9, 28));
@@ -72,7 +69,7 @@ public class FilmControllerTest {
 	
 	@Test
 	public void whenFilmsNotFoundThanStatusNotFound() throws Exception {
-		when(filmService.getAllFilms(page, size)).thenReturn(null);
+		when(filmService.getAllFilms(page, size)).thenThrow(new ResourceNotFoundException());
 		mockMvc.perform(get("/films?page=0&size=10"))
 							.andExpect(status().isNotFound());
 		verify(filmService, times(1)).getAllFilms(page, size);

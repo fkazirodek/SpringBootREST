@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindException;
@@ -30,5 +31,11 @@ public class GlobalControllerExceptionHandler {
 						Collectors.groupingBy(FieldError::getField,
 						Collectors.mapping(FieldError::getDefaultMessage, Collectors.toSet())));
 		return errorsMap;
+	}
+	
+	@ExceptionHandler(DataIntegrityViolationException.class)
+	@ResponseStatus(value=HttpStatus.CONFLICT, reason="Resource you want to save already exists")
+	public String handleDataIntegrityViolationException(DataIntegrityViolationException ex) {
+		return ex.getMessage();
 	}
 }
