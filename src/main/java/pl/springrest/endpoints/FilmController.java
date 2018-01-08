@@ -12,14 +12,17 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
+import pl.springrest.domain.actor.Actor;
 import pl.springrest.domain.film.Film;
 import pl.springrest.domain.film.FilmService;
+import pl.springrest.dto.ActorDTO;
 import pl.springrest.dto.FilmDTO;
 
 @RestController
@@ -39,8 +42,8 @@ public class FilmController {
 
 	@GetMapping(path = "/{category}", produces = MediaType.APPLICATION_JSON_VALUE)
 	public List<FilmDTO> findFilmsByCategory(@PathVariable String category, 
-										@RequestParam int page, 
-										@RequestParam int size) {
+											@RequestParam int page, 
+											@RequestParam int size) {
 		return filmService.getFilmsByCategory(category, page, size);
 	}
 
@@ -49,7 +52,12 @@ public class FilmController {
 		return filmService.getFilmByTitle(title);
 	}
 	
-	@PostMapping(path="/film/add", consumes=MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping(path="/film/{title}/actors", produces=MediaType.APPLICATION_JSON_VALUE)
+	public List<ActorDTO> getActorsFromFilm(@PathVariable String title) {
+		return filmService.getActorsFromFilmByTitle(title);
+	}
+	
+	@PostMapping(path="/film", consumes=MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> addNewFilm(@Valid @RequestBody Film film, 
 								BindingResult bindingResult, 
 								UriComponentsBuilder uriBuilder) throws BindException {
@@ -62,4 +70,10 @@ public class FilmController {
 							.build().toUri();
 		return ResponseEntity.created(location).build();		
 	}
+	
+	@PutMapping(path="/film/{title}/actors", consumes=MediaType.APPLICATION_JSON_VALUE)
+	public void addActorsToFilm(@RequestBody List<Actor> actors, @PathVariable String title) {
+		filmService.addActorsToFilm(actors, title);
+	}
+	
 }

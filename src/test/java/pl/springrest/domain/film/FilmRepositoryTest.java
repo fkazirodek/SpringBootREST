@@ -56,7 +56,7 @@ public class FilmRepositoryTest {
 	}
 
 	@Test
-	public void ifFilmsExistReturnListNotNullAndSize2() {
+	public void ifFilmsExistReturnListNotNullAndSize3() {
 		Page<Film> film = filmRepository.findAll(pageRequest);
 		assertNotNull(film);
 		assertThat(film.getContent()).hasSize(3);
@@ -87,10 +87,10 @@ public class FilmRepositoryTest {
 	}
 	
 	@Test
-	public void ifFilmNotFoundReturnNull() {
+	public void ifFilmNotFoundReturnEmptyOptional() {
 		String title = "T";
 		Optional<Film> film = filmRepository.findByTitle(title);
-		assertNull(film.orElse(null));
+		assertFalse(film.isPresent());
 	}
 	
 }

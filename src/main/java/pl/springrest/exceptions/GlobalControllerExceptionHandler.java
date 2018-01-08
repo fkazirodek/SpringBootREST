@@ -1,4 +1,4 @@
-package pl.springrest.endpoints;
+package pl.springrest.exceptions;
 
 import java.util.List;
 import java.util.Map;
@@ -24,12 +24,13 @@ public class GlobalControllerExceptionHandler {
 	}
 	
 	@ExceptionHandler(BindException.class)
-	@ResponseStatus(value=HttpStatus.BAD_REQUEST)
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
 	protected Map<String, Set<String>> handleBindException(BindException ex) {
 		List<FieldError> fieldErrors = ex.getBindingResult().getFieldErrors();
 		Map<String, Set<String>> errorsMap = fieldErrors.stream().collect(
-						Collectors.groupingBy(FieldError::getField,
-						Collectors.mapping(FieldError::getDefaultMessage, Collectors.toSet())));
+											Collectors.groupingBy(
+												FieldError::getField,
+												Collectors.mapping(FieldError::getDefaultMessage, Collectors.toSet())));
 		return errorsMap;
 	}
 	

@@ -22,7 +22,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.MediaType;
@@ -38,6 +37,7 @@ import pl.springrest.domain.user.Address;
 import pl.springrest.domain.user.User;
 import pl.springrest.domain.user.UserService;
 import pl.springrest.dto.UserDTO;
+import pl.springrest.exceptions.GlobalControllerExceptionHandler;
 
 @RunWith(SpringRunner.class)
 public class UserControllerTest {
@@ -55,7 +55,6 @@ public class UserControllerTest {
 
 	@Before
 	public void beforeMethod() {
-		MockitoAnnotations.initMocks(this);
 		mockMvc = MockMvcBuilders
 					.standaloneSetup(userController)
 					.setControllerAdvice(new GlobalControllerExceptionHandler())
@@ -89,7 +88,7 @@ public class UserControllerTest {
 	@Test
 	public void userSuccessfullyCreated() throws JsonProcessingException, Exception {
 		when(userService.saveUser(user)).thenReturn(userDto);
-		mockMvc.perform(post("/user/register")
+		mockMvc.perform(post("/user")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(new ObjectMapper().writeValueAsString(user)))
 				.andExpect(status().isCreated())
@@ -101,7 +100,7 @@ public class UserControllerTest {
 	@Test
 	public void duplicateUser() throws JsonProcessingException, Exception {
 		when(userService.saveUser(user)).thenThrow(new DataIntegrityViolationException("Conflict"));
-		mockMvc.perform(post("/user/register")
+		mockMvc.perform(post("/user")
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(new ObjectMapper().writeValueAsString(user)))
 				.andExpect(status().isConflict());	
@@ -110,7 +109,7 @@ public class UserControllerTest {
 	@Test
 	public void whenUserValidationIsFailThanHttpStatusBadRequest() throws JsonProcessingException, Exception {
 		user.setLogin("");
-		mockMvc.perform(post("/user/register")
+		mockMvc.perform(post("/user")
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(new ObjectMapper().writeValueAsString(user)))
 				.andExpect(status().isBadRequest());
@@ -121,8 +120,8 @@ public class UserControllerTest {
 		String loginSizeMessage = "Login lenght must be between 3 and 15";
 		String loginNotEmptyMessage = "Login can not be empty";
 		user.setLogin("");
-		MvcResult result = mockMvc.perform(post("/user/register")
-					.contentType(MediaType.APPLICATION_JSON)
+		MvcResult result = mockMvc.perform(post("/user")
+					.contentType(MediaType.APPLICATION_JSON_VALUE)
 					.content(new ObjectMapper().writeValueAsString(user)))
 				.andReturn();
 		assertThat(result.getResolvedException().getMessage()).contains(loginSizeMessage);
@@ -133,7 +132,7 @@ public class UserControllerTest {
 	public void whenEmailFieldIsNotValidThanReturnEmailMessages() throws JsonProcessingException, Exception {
 		String emailMessage = "You must enter the correct e-mail address";
 		user.setEmail("a");
-		MvcResult result = mockMvc.perform(post("/user/register")
+		MvcResult result = mockMvc.perform(post("/user")
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(new ObjectMapper().writeValueAsString(user)))
 				.andReturn();

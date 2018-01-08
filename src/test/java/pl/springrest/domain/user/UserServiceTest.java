@@ -17,8 +17,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import pl.springrest.converters.UserDTOConverter;
 import pl.springrest.dto.UserDTO;
+import pl.springrest.utils.dto_converters.UserDTOConverter;
 
 @RunWith(SpringRunner.class)
 public class UserServiceTest {

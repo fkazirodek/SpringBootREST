@@ -6,8 +6,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
-import pl.springrest.converters.ActorDTOConverter;
 import pl.springrest.dto.ActorDTO;
+import pl.springrest.utils.dto_converters.ActorDTOConverter;
 
 @Service
 public class ActorService {

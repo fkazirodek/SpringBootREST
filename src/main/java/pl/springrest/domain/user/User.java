@@ -1,5 +1,7 @@
 package pl.springrest.domain.user;
 
+import java.io.Serializable;
+
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
@@ -14,7 +16,12 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 @Entity
 @Table(name="users")
-public class User {
+public class User implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue(strategy=GenerationType.IDENTITY)

@@ -6,8 +6,8 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
-import pl.springrest.converters.UserDTOConverter;
 import pl.springrest.dto.UserDTO;
+import pl.springrest.utils.dto_converters.UserDTOConverter;
 
 @Service
 @Transactional

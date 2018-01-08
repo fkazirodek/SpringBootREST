@@ -37,7 +37,7 @@ public class UserController {
 		return userService.getUserBy(id);
 	}
 
-	@PostMapping(path = "/register", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> registerUser(@Valid @RequestBody User user, 
 											BindingResult bindingResult,
 											UriComponentsBuilder uriBuilder) throws BindException {

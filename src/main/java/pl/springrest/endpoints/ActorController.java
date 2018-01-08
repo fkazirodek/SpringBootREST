@@ -36,7 +36,7 @@ public class ActorController {
 		return actorService.findActorsBy(name);
 	}
 	
-	@PostMapping(value="actor/add", consumes=MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping(value="actor", consumes=MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<Void> addActor(@Valid @RequestBody Actor actor, BindingResult bindingResult, UriComponentsBuilder uriBuilder) throws BindException {
 		if(bindingResult.hasErrors())
 			throw new BindException(bindingResult);

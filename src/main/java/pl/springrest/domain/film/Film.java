@@ -1,5 +1,6 @@
 package pl.springrest.domain.film;
 
+import java.io.Serializable;
 import java.time.LocalDate;
 import java.util.HashSet;
 import java.util.Set;
@@ -21,11 +22,16 @@ import org.hibernate.validator.constraints.NotEmpty;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
-import pl.springrest.converters.LocalDateDeserializer;
 import pl.springrest.domain.actor.Actor;
+import pl.springrest.utils.LocalDateDeserializer;
 
 @Entity
-public class Film {
+public class Film implements Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -51,7 +57,7 @@ public class Film {
 	@Column(nullable = true)
 	private double rating;
 
-	@ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.EAGER)
+	@ManyToMany(cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
 	@JoinTable(joinColumns = @JoinColumn(name = "film_id", referencedColumnName = "film_id"), 
 				inverseJoinColumns = @JoinColumn(name = "actor_id", referencedColumnName = "actor_id"))
 	private Set<Actor> actors = new HashSet<>();

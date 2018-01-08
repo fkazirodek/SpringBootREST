@@ -17,16 +17,22 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.test.context.junit4.SpringRunner;
 
-import pl.springrest.converters.FilmDTOConverter;
+import pl.springrest.domain.actor.ActorRepository;
 import pl.springrest.dto.FilmDTO;
+import pl.springrest.utils.dto_converters.ActorDTOConverter;
+import pl.springrest.utils.dto_converters.FilmDTOConverter;
 
 @RunWith(SpringRunner.class)
 public class FilmServiceTest {
 
 	private FilmService filmService;
 	private FilmDTOConverter filmDTOConverter;
+	private ActorDTOConverter actorDTOConverter;
 	@Mock
 	private FilmRepository filmRepository;
+	@Mock
+	private ActorRepository actorRepository;
+	
 	
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
@@ -36,7 +42,7 @@ public class FilmServiceTest {
 	@Before
 	public void beforeMethod() {
 		filmDTOConverter = new FilmDTOConverter();
-		filmService = new FilmService(filmRepository, filmDTOConverter);
+		filmService = new FilmService(filmRepository, filmDTOConverter, actorRepository, actorDTOConverter);
 		film = new Film("Title", "film description", "action", LocalDate.of(2015, 6, 24));
 	}
 	
@@ -54,6 +60,15 @@ public class FilmServiceTest {
 		expectedException.expect(ResourceNotFoundException.class);
 		filmService.getFilmByTitle(film.getTitle());	
 	}
+	
+//	@Test
+//	public void whenGetActorsFromFilmShouldReturnActors() {
+//		film.getActors().add(new Actor("A", "B"));
+//		when(filmRepository.findByTitle(film.getTitle())).thenReturn(Optional.of(film));
+//		List<ActorDTO> actors = filmService.getActorsFromFilmByTitle(film.getTitle());
+//		assertNotNull(actors);
+//		assertThat(actors).isNotEmpty();
+//	}
 	
 	@Test
 	public void whenSaveFilmAndFilmNotExistShouldReturnFilmDTO() {

@@ -1,6 +1,8 @@
 package pl.springrest.domain.film;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
 
 import javax.transaction.Transactional;
 
@@ -10,19 +12,27 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
-import pl.springrest.converters.FilmDTOConverter;
+import pl.springrest.domain.actor.Actor;
+import pl.springrest.domain.actor.ActorRepository;
+import pl.springrest.dto.ActorDTO;
 import pl.springrest.dto.FilmDTO;
+import pl.springrest.utils.dto_converters.ActorDTOConverter;
+import pl.springrest.utils.dto_converters.FilmDTOConverter;
 
 @Service
 @Transactional
 public class FilmService {
 
 	private FilmRepository filmRepository;
+	private ActorRepository actorRepository;
 	private FilmDTOConverter filmDTOConverter;
+	private ActorDTOConverter actorDTOConverter;
 
-	public FilmService(FilmRepository filmRepository, FilmDTOConverter filmDTOConverter) {
+	public FilmService(FilmRepository filmRepository, FilmDTOConverter filmDTOConverter, ActorRepository actorRepository, ActorDTOConverter actorDTOConverter) {
 		this.filmRepository = filmRepository;
 		this.filmDTOConverter = filmDTOConverter;
+		this.actorRepository = actorRepository;
+		this.actorDTOConverter = actorDTOConverter;
 	}
 
 	/**
@@ -38,7 +48,7 @@ public class FilmService {
 	 */
 	public List<FilmDTO> getAllFilms(int page, int size) throws ResourceNotFoundException {
 		Page<Film> films = filmRepository.findAll(new PageRequest(page, size));
-		if (films.getContent() == null)
+		if (films.getContent().isEmpty())
 			throw new ResourceNotFoundException("Films not found");
 		return films.map(filmDTOConverter::convert).getContent();
 	}
@@ -57,8 +67,9 @@ public class FilmService {
 	 *             if films not found
 	 */
 	public List<FilmDTO> getFilmsByCategory(String category, int page, int size) throws ResourceNotFoundException {
-		Page<Film> filmsByCategory = filmRepository.findByCategoryOrderByRatingDesc(category, new PageRequest(page, size));
-		if (filmsByCategory.getContent() == null)
+		Page<Film> filmsByCategory = filmRepository.findByCategoryOrderByRatingDesc(category,
+				new PageRequest(page, size));
+		if (filmsByCategory.getContent().isEmpty())
 			throw new ResourceNotFoundException("Films not found");
 		return filmsByCategory.map(filmDTOConverter::convert).getContent();
 	}
@@ -73,10 +84,44 @@ public class FilmService {
 	 *             when film not found
 	 */
 	public FilmDTO getFilmByTitle(String title) throws ResourceNotFoundException {
-		Film film = filmRepository
-						.findByTitle(title)
-							.orElseThrow(ResourceNotFoundException::new);
+		Film film = filmRepository.findByTitle(title).orElseThrow(ResourceNotFoundException::new);
 		return filmDTOConverter.convert(film);
+	}
+
+	/**
+	 * Find all actors who plays in film
+	 * 
+	 * @param title
+	 *            film title to find
+	 * @return List<ActorDTO> list of actors who plays in that film
+	 * @throws ResourceNotFoundException
+	 *             when film not found
+	 */
+	public List<ActorDTO> getActorsFromFilmByTitle(String title) {
+		Film film = filmRepository.findByTitle(title).orElseThrow(ResourceNotFoundException::new);
+		Set<Actor> actors = film.getActors();
+		return actorDTOConverter.convertAll(actors);
+	}
+
+	/**
+	 * Add all actors who plays in film
+	 * 
+	 * @param actors 
+	 * 				who will be added to film
+	 * @param title
+	 *             of the film to which actors will be added
+	 * @throws ResourceNotFoundException
+	 *             when film not found
+	 */
+	public void addActorsToFilm(List<Actor> actors, String title) {
+		Film film = filmRepository.findByTitle(title).orElseThrow(ResourceNotFoundException::new);
+		for (Actor actor : actors) {
+			Optional<Actor> actorOptional = actorRepository
+												.findByFirstNameAndLastName(actor.getFirstName(),
+																			actor.getLastName());
+			if (actorOptional.isPresent())
+				film.getActors().add(actorOptional.get());
+		}
 	}
 
 	/**

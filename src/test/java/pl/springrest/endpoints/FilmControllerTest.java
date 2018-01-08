@@ -15,15 +15,14 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.MockitoAnnotations;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
-import pl.springrest.domain.film.Film;
 import pl.springrest.domain.film.FilmService;
 import pl.springrest.dto.FilmDTO;
+import pl.springrest.exceptions.GlobalControllerExceptionHandler;
 
 @RunWith(SpringRunner.class)
 public class FilmControllerTest {
@@ -37,7 +36,6 @@ public class FilmControllerTest {
 	private FilmController filmController;
 	
 	private List<FilmDTO> films;
-	private Film film;
 	private FilmDTO filmDto1;
 	private FilmDTO filmDto2;
 	private final String category = "action";
@@ -46,12 +44,10 @@ public class FilmControllerTest {
 	
 	@Before
 	public void beforeMethod() {
-		MockitoAnnotations.initMocks(this);
 		mockMvc = MockMvcBuilders
 					.standaloneSetup(filmController)
 					.setControllerAdvice(new GlobalControllerExceptionHandler())
 					.build();
-		film = new Film("Title1", "film description", "action", LocalDate.of(2015, 4, 28));
 		filmDto1 = new FilmDTO("Title1", "film description", "action", LocalDate.of(2015, 4, 28));
 		filmDto2 = new FilmDTO("Title2", "film description", "action", LocalDate.of(2016, 9, 28));
 		films = new ArrayList<>();
@@ -110,15 +106,4 @@ public class FilmControllerTest {
 		verify(filmService, times(1)).getFilmByTitle(title);
 	}
 	
-//	@Test
-//	public void filmSuccessfullyCreated() throws JsonProcessingException, Exception {
-//		when(filmService.saveFilm(film)).thenReturn(filmDto1);
-//		mockMvc.perform(post("/films/film/add")
-//						.contentType(MediaType.APPLICATION_JSON)
-//						.content(new ObjectMapper().writeValueAsString(film)))
-//				.andExpect(status().isCreated())
-//				.andExpect(header().stringValues("location", "http://localhost/films/film/Title1"));
-//		verify(filmService, times(1)).saveFilm(film);
-//		verifyNoMoreInteractions(filmService);
-//	}
 }
