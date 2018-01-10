@@ -13,7 +13,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.test.context.junit4.SpringRunner;
 
@@ -38,12 +38,14 @@ public class FilmServiceTest {
 	public ExpectedException expectedException = ExpectedException.none();
 	
 	private Film film;
+	private FilmDTO filmDto;
 	
 	@Before
 	public void beforeMethod() {
 		filmDTOConverter = new FilmDTOConverter();
 		filmService = new FilmService(filmRepository, filmDTOConverter, actorRepository, actorDTOConverter);
 		film = new Film("Title", "film description", "action", LocalDate.of(2015, 6, 24));
+		filmDto = new FilmDTO("Title", "film description", "action", LocalDate.of(2015, 6, 24));
 	}
 	
 	@Test
@@ -61,27 +63,18 @@ public class FilmServiceTest {
 		filmService.getFilmByTitle(film.getTitle());	
 	}
 	
-//	@Test
-//	public void whenGetActorsFromFilmShouldReturnActors() {
-//		film.getActors().add(new Actor("A", "B"));
-//		when(filmRepository.findByTitle(film.getTitle())).thenReturn(Optional.of(film));
-//		List<ActorDTO> actors = filmService.getActorsFromFilmByTitle(film.getTitle());
-//		assertNotNull(actors);
-//		assertThat(actors).isNotEmpty();
-//	}
-	
 	@Test
 	public void whenSaveFilmAndFilmNotExistShouldReturnFilmDTO() {
 		when(filmRepository.save(film)).thenReturn(film);
-		FilmDTO filmDTO = filmService.saveFilm(film);
+		FilmDTO filmDTO = filmService.saveFilm(filmDto);
 		compareFilm(filmDTO);
 	}
 	
 	@Test
-	public void whenSaveFilmAndFilmExistShouldThrowsDataIntegrityViolationException() {
-		when(filmRepository.save(film)).thenThrow(new DataIntegrityViolationException("Conflict"));
-		expectedException.expect(DataIntegrityViolationException.class);
-		filmService.saveFilm(film);
+	public void whenSaveFilmAndFilmExistShouldThrowsDuplicateResourceException() {
+		when(filmRepository.save(film)).thenThrow(new DuplicateKeyException("Conflict"));
+		expectedException.expect(DuplicateKeyException.class);
+		filmService.saveFilm(filmDto);
 		
 	}
 	

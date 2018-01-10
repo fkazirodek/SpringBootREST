@@ -6,7 +6,7 @@ import static org.junit.Assert.*;
 import java.time.LocalDate;
 import java.util.Optional;
 
-import javax.validation.ConstraintViolationException;
+import javax.transaction.Transactional;
 
 import org.junit.After;
 import org.junit.Before;
@@ -16,6 +16,7 @@ import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -63,6 +64,7 @@ public class FilmRepositoryTest {
 	}
 	
 	@Test
+	@Transactional
 	public void findFilmByCategoryShouldReturnTwoFilmInOrder() {
 		String category = "horror";
 		Page<Film> filmsByCategory = filmRepository.findByCategoryOrderByRatingDesc(category, pageRequest);
@@ -74,11 +76,12 @@ public class FilmRepositoryTest {
 	
 	@Test
 	public void ifDescriptionEmptyExpectedConstraintViolationException() {
-		expectedException.expect(ConstraintViolationException.class);
-		filmRepository.save(new Film("Title4", "", "horror", LocalDate.of(2015, 4, 28)));
+		expectedException.expect(DataIntegrityViolationException.class);
+		filmRepository.save(new Film("Title4", null, "horror", LocalDate.of(2015, 4, 28)));
 	}
 	
 	@Test
+	@Transactional
 	public void ifFilmFoundReturnFilm() {
 		String title = film1.getTitle();
 		Optional<Film> film = filmRepository.findByTitle(title);

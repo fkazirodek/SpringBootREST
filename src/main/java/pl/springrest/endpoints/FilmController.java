@@ -19,8 +19,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import pl.springrest.domain.actor.Actor;
-import pl.springrest.domain.film.Film;
 import pl.springrest.domain.film.FilmService;
 import pl.springrest.dto.ActorDTO;
 import pl.springrest.dto.FilmDTO;
@@ -58,12 +56,12 @@ public class FilmController {
 	}
 	
 	@PostMapping(path="/film", consumes=MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<Void> addNewFilm(@Valid @RequestBody Film film, 
+	public ResponseEntity<Void> addNewFilm(@Valid @RequestBody FilmDTO filmDto, 
 								BindingResult bindingResult, 
 								UriComponentsBuilder uriBuilder) throws BindException {
 		if(bindingResult.hasErrors()) 
 			throw new BindException(bindingResult);
-		FilmDTO filmDTO = filmService.saveFilm(film);
+		FilmDTO filmDTO = filmService.saveFilm(filmDto);
 		URI location = uriBuilder
 						.path("/films/film/")
 						.path(filmDTO.getTitle())
@@ -72,7 +70,7 @@ public class FilmController {
 	}
 	
 	@PutMapping(path="/film/{title}/actors", consumes=MediaType.APPLICATION_JSON_VALUE)
-	public void addActorsToFilm(@RequestBody List<Actor> actors, @PathVariable String title) {
+	public void addActorsToFilm(@RequestBody List<ActorDTO> actors, @PathVariable String title) {
 		filmService.addActorsToFilm(actors, title);
 	}
 	

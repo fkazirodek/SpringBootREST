@@ -2,11 +2,11 @@ package pl.springrest.domain.film;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 
 import javax.transaction.Transactional;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
@@ -33,6 +33,15 @@ public class FilmService {
 		this.filmDTOConverter = filmDTOConverter;
 		this.actorRepository = actorRepository;
 		this.actorDTOConverter = actorDTOConverter;
+	}
+	
+	/**
+	 * Return User entity, use only in service layer
+	 * @param title film title
+	 * @return Film entity
+	 */
+	public Film getFilmEntity(String title) throws ResourceNotFoundException{
+		return filmRepository.findByTitle(title).orElseThrow(ResourceNotFoundException::new);	
 	}
 
 	/**
@@ -67,10 +76,11 @@ public class FilmService {
 	 *             if films not found
 	 */
 	public List<FilmDTO> getFilmsByCategory(String category, int page, int size) throws ResourceNotFoundException {
-		Page<Film> filmsByCategory = filmRepository.findByCategoryOrderByRatingDesc(category,
-				new PageRequest(page, size));
+		Page<Film> filmsByCategory = filmRepository
+										.findByCategoryOrderByRatingDesc(category,
+																		new PageRequest(page, size));
 		if (filmsByCategory.getContent().isEmpty())
-			throw new ResourceNotFoundException("Films not found");
+			throw new ResourceNotFoundException("Films in category " + category + " not found");
 		return filmsByCategory.map(filmDTOConverter::convert).getContent();
 	}
 
@@ -84,7 +94,9 @@ public class FilmService {
 	 *             when film not found
 	 */
 	public FilmDTO getFilmByTitle(String title) throws ResourceNotFoundException {
-		Film film = filmRepository.findByTitle(title).orElseThrow(ResourceNotFoundException::new);
+		Film film = filmRepository
+						.findByTitle(title)
+							.orElseThrow(ResourceNotFoundException::new);
 		return filmDTOConverter.convert(film);
 	}
 
@@ -98,9 +110,10 @@ public class FilmService {
 	 *             when film not found
 	 */
 	public List<ActorDTO> getActorsFromFilmByTitle(String title) {
-		Film film = filmRepository.findByTitle(title).orElseThrow(ResourceNotFoundException::new);
-		Set<Actor> actors = film.getActors();
-		return actorDTOConverter.convertAll(actors);
+		Film film = filmRepository
+						.findByTitle(title)
+							.orElseThrow(ResourceNotFoundException::new);
+		return actorDTOConverter.convertAll(film.getActors());
 	}
 
 	/**
@@ -113,9 +126,11 @@ public class FilmService {
 	 * @throws ResourceNotFoundException
 	 *             when film not found
 	 */
-	public void addActorsToFilm(List<Actor> actors, String title) {
-		Film film = filmRepository.findByTitle(title).orElseThrow(ResourceNotFoundException::new);
-		for (Actor actor : actors) {
+	public void addActorsToFilm(List<ActorDTO> actors, String title) {
+		Film film = filmRepository
+						.findByTitle(title)
+							.orElseThrow(ResourceNotFoundException::new);
+		for (ActorDTO actor : actors) {
 			Optional<Actor> actorOptional = actorRepository
 												.findByFirstNameAndLastName(actor.getFirstName(),
 																			actor.getLastName());
@@ -130,11 +145,17 @@ public class FilmService {
 	 * @param film
 	 *            Film to save
 	 * @return FilmDTO
-	 * @throws DataIntegrityViolationException
+	 * @throws DuplicateResourceException
 	 *             if film already exist in database
 	 */
-	public FilmDTO saveFilm(Film film) throws DataIntegrityViolationException {
-		return filmDTOConverter.convert(filmRepository.save(film));
+	public FilmDTO saveFilm(FilmDTO filmDto) throws DuplicateKeyException {
+		Film filmSaved;
+		try {
+			filmSaved = filmRepository.save(filmDTOConverter.convert(filmDto));
+		} catch (DataIntegrityViolationException ex) {
+			throw new DuplicateKeyException("Film '" + filmDto.getTitle() + "' already exist");
+		}
+		return filmDTOConverter.convert(filmSaved);
 	}
 
 }

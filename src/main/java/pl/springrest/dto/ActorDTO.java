@@ -1,8 +1,12 @@
 package pl.springrest.dto;
 
+import org.hibernate.validator.constraints.NotEmpty;
+
 public class ActorDTO {
 
+	@NotEmpty
 	private String firstName;
+	@NotEmpty
 	private String lastName;
 
 	public ActorDTO() {

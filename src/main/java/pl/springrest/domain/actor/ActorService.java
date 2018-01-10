@@ -3,6 +3,7 @@ package pl.springrest.domain.actor;
 import java.util.List;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -45,8 +46,14 @@ public class ActorService {
 	 * @throws DataIntegrityViolationException
 	 *             if actor already exist in database
 	 */
-	public ActorDTO saveActor(Actor actor) throws DataIntegrityViolationException {
-		return actorConverter.convert(actorRepository.save(actor));
+	public ActorDTO saveActor(ActorDTO actorDto) throws DuplicateKeyException {
+		Actor savedActor;
+		try {
+			savedActor = actorRepository.save(actorConverter.convert(actorDto));
+		} catch (DataIntegrityViolationException ex) {
+			throw new DuplicateKeyException("Actor " + actorDto.getLastName() + " exist");
+		}
+		return actorConverter.convert(savedActor);
 	}
 
 }

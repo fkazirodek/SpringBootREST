@@ -15,15 +15,10 @@ import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
-
-import org.hibernate.validator.constraints.NotEmpty;
-
-import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import javax.persistence.OneToMany;
 
 import pl.springrest.domain.actor.Actor;
-import pl.springrest.utils.LocalDateDeserializer;
+import pl.springrest.domain.ratings.Rating;
 
 @Entity
 public class Film implements Serializable {
@@ -38,20 +33,16 @@ public class Film implements Serializable {
 	@Column(name = "film_id")
 	private Long id;
 
-	@NotEmpty(message = "{pl.springrest.domain.film.Film.title.NotEmpty}")
 	@Column(unique = true)
 	private String title;
 
-	@NotEmpty(message = "{pl.springrest.domain.film.Film.description.NotEmpty}")
-	@Size(min = 20, max = 250, message = "{pl.springrest.domain.film.Film.description.Size}")
+	@Column(nullable=false)
 	private String description;
-
-	@NotEmpty(message = "{pl.springrest.domain.film.Film.category.NotEmpty}")
+	
+	@Column(nullable=false)
 	private String category;
 
-	@NotNull(message = "{pl.springrest.domain.film.Film.yearRelease.NotNull}")
-	@Column(name = "year_release")
-	@JsonDeserialize(using=LocalDateDeserializer.class)
+	@Column(name="date_release",nullable=false)
 	private LocalDate dateRelease;
 
 	@Column(nullable = true)
@@ -61,10 +52,13 @@ public class Film implements Serializable {
 	@JoinTable(joinColumns = @JoinColumn(name = "film_id", referencedColumnName = "film_id"), 
 				inverseJoinColumns = @JoinColumn(name = "actor_id", referencedColumnName = "actor_id"))
 	private Set<Actor> actors = new HashSet<>();
+	
+	@OneToMany(mappedBy="film")
+	Set<Rating> filmRatings = new HashSet<>();
 
 	public Film() {
 	}
-
+	
 	public Film(String title, String description, String category, LocalDate yearRelease) {
 		this.title = title;
 		this.description = description;
@@ -74,6 +68,10 @@ public class Film implements Serializable {
 
 	public Long getId() {
 		return id;
+	}
+
+	public void setId(Long id) {
+		this.id = id;
 	}
 
 	public String getTitle() {
@@ -100,20 +98,12 @@ public class Film implements Serializable {
 		this.category = category;
 	}
 
-	public LocalDate getYearRelease() {
+	public LocalDate getDateRelease() {
 		return dateRelease;
 	}
 
-	public void setYearRelease(LocalDate yearRelease) {
-		this.dateRelease = yearRelease;
-	}
-
-	public Set<Actor> getActors() {
-		return actors;
-	}
-
-	public void setActors(Set<Actor> actors) {
-		this.actors = actors;
+	public void setDateRelease(LocalDate dateRelease) {
+		this.dateRelease = dateRelease;
 	}
 
 	public double getRating() {
@@ -124,6 +114,22 @@ public class Film implements Serializable {
 		this.rating = rating;
 	}
 
+	public Set<Actor> getActors() {
+		return actors;
+	}
+
+	public void setActors(Set<Actor> actors) {
+		this.actors = actors;
+	}
+
+	public Set<Rating> getFilmRatings() {
+		return filmRatings;
+	}
+
+	public void setFilmRatings(Set<Rating> filmRatings) {
+		this.filmRatings = filmRatings;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -132,7 +138,6 @@ public class Film implements Serializable {
 		result = prime * result + ((category == null) ? 0 : category.hashCode());
 		result = prime * result + ((dateRelease == null) ? 0 : dateRelease.hashCode());
 		result = prime * result + ((description == null) ? 0 : description.hashCode());
-		result = prime * result + ((id == null) ? 0 : id.hashCode());
 		result = prime * result + ((title == null) ? 0 : title.hashCode());
 		return result;
 	}
@@ -165,11 +170,6 @@ public class Film implements Serializable {
 			if (other.description != null)
 				return false;
 		} else if (!description.equals(other.description))
-			return false;
-		if (id == null) {
-			if (other.id != null)
-				return false;
-		} else if (!id.equals(other.id))
 			return false;
 		if (title == null) {
 			if (other.title != null)

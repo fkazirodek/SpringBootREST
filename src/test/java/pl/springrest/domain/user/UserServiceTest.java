@@ -3,6 +3,7 @@ package pl.springrest.domain.user;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 import java.util.Optional;
@@ -29,6 +30,7 @@ public class UserServiceTest {
 	private UserRepository userRepository;
 
 	private User user;
+	private UserDTO userDto;
 	
 	@Rule
 	public ExpectedException expectedException = ExpectedException.none();
@@ -38,6 +40,7 @@ public class UserServiceTest {
 		userDTOConverter = new UserDTOConverter();
 		userService = new UserService(userRepository, userDTOConverter);
 		user = new User(1L, "fn", "ln", "login", "pass", "user@email.com");
+		userDto = new UserDTO(1L, "fn", "ln", "login", "pass", "user@email.com");
 	}
 
 	@Test
@@ -66,17 +69,16 @@ public class UserServiceTest {
 
 	@Test
 	public void saveUserWhenUserNotExistInDB() {
-		when(userRepository.findByLogin(user.getLogin())).thenReturn(null);
-		when(userRepository.save(user)).thenReturn(user);
-		UserDTO userDTO = userService.saveUser(user);
+		when(userRepository.save(any(User.class))).thenReturn(user);
+		UserDTO userDTO = userService.saveUser(userDto);
 		compareUser(userDTO);
 	}
 	
 	@Test
 	public void whenSaveUserAndUserExistShouldThrowsDataIntegrityViolationException() {
-		when(userRepository.save(user)).thenThrow(new DataIntegrityViolationException("Conflict"));
+		when(userRepository.save(any(User.class))).thenThrow(new DataIntegrityViolationException("Conflict"));
 		expectedException.expect(DataIntegrityViolationException.class);
-		userService.saveUser(user);
+		userService.saveUser(userDto);
 	}
 	
 	@Test

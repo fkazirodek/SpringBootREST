@@ -2,6 +2,7 @@ package pl.springrest.endpoints;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
@@ -22,7 +23,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -60,7 +61,7 @@ public class UserControllerTest {
 					.setControllerAdvice(new GlobalControllerExceptionHandler())
 					.build();
 		user = new User("Jan", "Nowak", "login", "password", "user@email.com");
-		userDto = new UserDTO(1L, "Jan", "Nowak", "login", "user@email.com");
+		userDto = new UserDTO(1L, "Jan", "Nowak", "login", "password", "user@email.com");
 	}
 
 	@Test
@@ -68,8 +69,8 @@ public class UserControllerTest {
 		when(userService.getUserBy(1)).thenReturn(userDto);
 		mockMvc.perform(get("/user/{1}", 1)).andExpect(status().isOk())
 				.andExpect(content().contentType(MediaType.APPLICATION_JSON_UTF8_VALUE))
-				.andExpect(jsonPath("$.id", is(1)))
 				.andExpect(jsonPath("$.firstName", is(userDto.getFirstName())))
+				.andExpect(jsonPath("$.lastName", is(userDto.getLastName())))
 				.andExpect(jsonPath("$.login", is(userDto.getLogin())));
 		verify(userService, times(1)).getUserBy(1);
 		verifyNoMoreInteractions(userService);
@@ -87,19 +88,19 @@ public class UserControllerTest {
 
 	@Test
 	public void userSuccessfullyCreated() throws JsonProcessingException, Exception {
-		when(userService.saveUser(user)).thenReturn(userDto);
+		when(userService.saveUser(any())).thenReturn(userDto);
 		mockMvc.perform(post("/user")
 						.contentType(MediaType.APPLICATION_JSON)
 						.content(new ObjectMapper().writeValueAsString(user)))
 				.andExpect(status().isCreated())
 				.andExpect(header().stringValues("location", "http://localhost/user/1"));
-		verify(userService, times(1)).saveUser(user);
+		verify(userService, times(1)).saveUser(any(UserDTO.class));
 		verifyNoMoreInteractions(userService);
 	}
 
 	@Test
 	public void duplicateUser() throws JsonProcessingException, Exception {
-		when(userService.saveUser(user)).thenThrow(new DataIntegrityViolationException("Conflict"));
+		when(userService.saveUser(any())).thenThrow(new DuplicateKeyException("Conflict"));
 		mockMvc.perform(post("/user")
 					.contentType(MediaType.APPLICATION_JSON)
 					.content(new ObjectMapper().writeValueAsString(user)))

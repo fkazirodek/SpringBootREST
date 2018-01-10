@@ -3,6 +3,7 @@ package pl.springrest.domain.user;
 import javax.transaction.Transactional;
 
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +21,15 @@ public class UserService {
 		this.userRepository = userRepository;
 		this.userDTOConverter = userDTOConverter;
 	}
+	
+	/**
+	 * Return User entity, use only in service layer
+	 * @param id user id
+	 * @return User entity
+	 */
+	public User getUserEntity(long id) {
+		return userRepository.findOne(id);	
+	}
 
 	/**
 	 * Find user in database and convert to DTO
@@ -33,7 +43,7 @@ public class UserService {
 	public UserDTO getUserBy(long id) throws ResourceNotFoundException {
 		User user = userRepository.findOne(id);
 		if (user == null)
-			throw new ResourceNotFoundException();
+			throw new ResourceNotFoundException("User " + id + " not found");
 		return userDTOConverter.convert(user);
 	}
 
@@ -62,8 +72,14 @@ public class UserService {
 	 * @throws DataIntegrityViolationException
 	 *             if user already exist in database
 	 */
-	public UserDTO saveUser(User user) throws DataIntegrityViolationException {
-		return userDTOConverter.convert(userRepository.save(user));
+	public UserDTO saveUser(UserDTO userDto) throws DuplicateKeyException {
+		User savedUser;
+		try {
+			savedUser = userRepository.save(userDTOConverter.convert(userDto));
+		} catch (DataIntegrityViolationException ex) {
+			throw new DuplicateKeyException("User " + userDto.getLogin() + " exist");
+		}
+		return userDTOConverter.convert(savedUser);
 	}
 
 	/**
@@ -81,7 +97,7 @@ public class UserService {
 	public UserDTO updateAddress(Address address, long id) throws ResourceNotFoundException {
 		User dbUser = userRepository.findOne(id);
 		if (dbUser == null)
-			throw new ResourceNotFoundException();
+			throw new ResourceNotFoundException("Can not update address because User " + id + " not found");
 		if (address != null)
 			dbUser.setAddress(address);
 		return userDTOConverter.convert(dbUser);
@@ -98,7 +114,7 @@ public class UserService {
 	public void deleteUser(long id) throws ResourceNotFoundException {
 		User user = userRepository.findOne(id);
 		if (user == null)
-			throw new ResourceNotFoundException("Can not delete user because user not exist");
+			throw new ResourceNotFoundException("Can not delete user because user not found");
 		userRepository.delete(id);
 
 	}
