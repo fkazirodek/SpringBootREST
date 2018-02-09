@@ -1,33 +1,23 @@
-package pl.springrest.domain.ratings;
+package pl.springrest.domain.rating;
 
-import java.io.Serializable;
-
+import javax.persistence.AttributeOverride;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
+import pl.springrest.domain.BaseEntity;
 import pl.springrest.domain.film.Film;
 import pl.springrest.domain.user.User;
 
 @Entity
 @Table(name="films_rating")
-public class Rating implements Serializable {
+@AttributeOverride(name = "id", column = @Column(name = "rating_id"))
+public class Rating extends BaseEntity {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
-
-	@Id
-	@GeneratedValue(strategy=GenerationType.IDENTITY)
-	@Column(name="rating_id")
-	private Long id;
 	
 	@ManyToOne(cascade=CascadeType.PERSIST)
 	@JoinColumn(name = "user_id") 
@@ -50,14 +40,6 @@ public class Rating implements Serializable {
 		this.user = user;
 		this.film = film;
 		this.rating = rating;
-	}
-
-	public Long getId() {
-		return id;
-	}
-
-	public void setId(Long id) {
-		this.id = id;
 	}
 
 	public User getUser() {

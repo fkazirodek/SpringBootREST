@@ -2,7 +2,7 @@ package pl.springrest.utils.dto_converters;
 
 import org.springframework.stereotype.Component;
 
-import pl.springrest.domain.ratings.Rating;
+import pl.springrest.domain.rating.Rating;
 import pl.springrest.dto.RatingDTO;
 
 @Component

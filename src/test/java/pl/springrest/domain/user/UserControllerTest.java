@@ -1,4 +1,4 @@
-package pl.springrest.endpoints;
+package pl.springrest.domain.user;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.CoreMatchers.is;
@@ -36,6 +36,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import pl.springrest.domain.user.Address;
 import pl.springrest.domain.user.User;
+import pl.springrest.domain.user.UserController;
 import pl.springrest.domain.user.UserService;
 import pl.springrest.dto.UserDTO;
 import pl.springrest.exceptions.GlobalControllerExceptionHandler;

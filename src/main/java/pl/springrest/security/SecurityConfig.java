@@ -9,24 +9,28 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
+	private static final String ROLE_USER = "USER";
+	private static final String ROLE_ADMIN = "ADMIN";
+
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.inMemoryAuthentication()
 				.withUser("user")
 				.password("pass")
-				.roles("USER")
+				.roles(ROLE_USER)
 			.and()
 				.withUser("admin")
 				.password("admin")
-				.roles("USER", "ADMIN");
+				.roles(ROLE_USER, ROLE_ADMIN);
 	}
 	
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 			http
 				.authorizeRequests()
-					.antMatchers(HttpMethod.POST ,"/films/film/add", "/actors/actor/add").hasRole("ADMIN")
-					.antMatchers(HttpMethod.POST, "/user/register").authenticated()
+					.antMatchers(HttpMethod.POST ,"/films", "/actors").hasRole(ROLE_ADMIN)
+					.antMatchers(HttpMethod.POST, "/users").authenticated()
+					.antMatchers(HttpMethod.GET, "/users").hasRole(ROLE_ADMIN)
 					.anyRequest().permitAll()
 				.and()
 					.httpBasic()

@@ -10,10 +10,17 @@ public class FilmDTOConverter implements DTOConverter<Film, FilmDTO> {
 
 	@Override
 	public FilmDTO convert(Film film) {
-		return new FilmDTO(film.getTitle(), film.getDescription(), film.getCategory(), film.getDateRelease(), film.getRating());
+		if(film != null) {
+			FilmDTO filmDTO =  new FilmDTO(film.getTitle(), film.getDescription(), film.getCategory(), film.getDateRelease());
+			filmDTO.setRating(film.getRating());
+			filmDTO.setActors(new ActorDTOConverter().convertSet(film.getActors()));
+			return filmDTO;
+		}
+		return null;
 	}
 	
 	public Film convert(FilmDTO filmDTO) {
 		return new Film(filmDTO.getTitle(), filmDTO.getDescription(), filmDTO.getCategory(), filmDTO.getDateRelease());
 	}
+	
 }

@@ -55,7 +55,7 @@ public class UserRepositoryTest {
 		Address address = new Address("Poland", "Warsaw", "Str", "00-000");
 		User foundUser = userRepository.save(user);
 		foundUser.setAddress(address);
-		User user2 = userRepository.findOne(1L);
+		User user2 = userRepository.findById(1L).get();
 		assertNotNull(user2.getAddress());
 		assertThat(user2.getAddress()).isEqualTo(address);
 	}

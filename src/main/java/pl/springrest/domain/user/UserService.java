@@ -1,5 +1,7 @@
 package pl.springrest.domain.user;
 
+import java.util.List;
+
 import javax.transaction.Transactional;
 
 import org.springframework.dao.DataIntegrityViolationException;
@@ -21,16 +23,17 @@ public class UserService {
 		this.userRepository = userRepository;
 		this.userDTOConverter = userDTOConverter;
 	}
-	
-	/**
-	 * Return User entity, use only in service layer
-	 * @param id user id
-	 * @return User entity
-	 */
-	public User getUserEntity(long id) {
-		return userRepository.findOne(id);	
-	}
 
+
+	/**
+	 * Get all users
+	 * 
+	 * @return List of UserDTO
+	 */
+	public List<UserDTO> getUsers() {
+		return userDTOConverter.convertAll(userRepository.findAll());
+	}
+	
 	/**
 	 * Find user in database and convert to DTO
 	 * 
@@ -40,11 +43,11 @@ public class UserService {
 	 * @throws ResourceNotFoundException
 	 *             if user not found
 	 */
-	public UserDTO getUserBy(long id) throws ResourceNotFoundException {
-		User user = userRepository.findOne(id);
-		if (user == null)
-			throw new ResourceNotFoundException("User " + id + " not found");
-		return userDTOConverter.convert(user);
+	public UserDTO getUserBy(long id) {
+		return userRepository
+				.findById(id)
+				.map(userDTOConverter::convert)
+				.orElseThrow(() -> new ResourceNotFoundException("User " + id + " not found"));
 	}
 
 	/**
@@ -56,11 +59,11 @@ public class UserService {
 	 * @throws ResourceNotFoundException
 	 *             if user not found
 	 */
-	public UserDTO getUserBy(String login) throws ResourceNotFoundException {
-		User user = userRepository
+	public UserDTO getUserBy(String login) {
+		return userRepository
 						.findByLogin(login)
+						.map(userDTOConverter::convert)
 							.orElseThrow(ResourceNotFoundException::new);
-		return userDTOConverter.convert(user);
 	}
 
 	/**
@@ -72,7 +75,7 @@ public class UserService {
 	 * @throws DataIntegrityViolationException
 	 *             if user already exist in database
 	 */
-	public UserDTO saveUser(UserDTO userDto) throws DuplicateKeyException {
+	public UserDTO saveUser(UserDTO userDto) {
 		User savedUser;
 		try {
 			savedUser = userRepository.save(userDTOConverter.convert(userDto));
@@ -94,13 +97,15 @@ public class UserService {
 	 * @throws ResourceNotFoundException
 	 *             when user not found in DB
 	 */
-	public UserDTO updateAddress(Address address, long id) throws ResourceNotFoundException {
-		User dbUser = userRepository.findOne(id);
-		if (dbUser == null)
-			throw new ResourceNotFoundException("Can not update address because User " + id + " not found");
-		if (address != null)
-			dbUser.setAddress(address);
-		return userDTOConverter.convert(dbUser);
+	public UserDTO updateAddress(Address address, long id) {
+		return userRepository
+					.findById(id)
+					.map(user -> {
+						user.setAddress(address);
+						return user;
+					})
+					.map(userDTOConverter::convert)
+					.orElseThrow(() -> new ResourceNotFoundException("Can not update address because User " + id + " not found"));
 	}
 
 	/**
@@ -112,10 +117,9 @@ public class UserService {
 	 *             if user not found in database
 	 */
 	public void deleteUser(long id) throws ResourceNotFoundException {
-		User user = userRepository.findOne(id);
-		if (user == null)
-			throw new ResourceNotFoundException("Can not delete user because user not found");
-		userRepository.delete(id);
-
+		User user = userRepository
+						.findById(id)
+						.orElseThrow(() -> new ResourceNotFoundException("Can not delete user because user not found"));
+		userRepository.delete(user);
 	}
 }

@@ -1,10 +1,13 @@
 package pl.springrest.domain.actor;
 
-import static org.junit.Assert.*;
+import static org.hamcrest.Matchers.hasSize;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
-
-import javax.transaction.Transactional;
 
 import org.junit.After;
 import org.junit.Before;
@@ -16,17 +19,19 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@Transactional
 public class ActorRepositoryTest {
 
+	private static final String LAST_NAME = "Nowak";
+	private static final String FIRST_NAME = "Jan";
+	
 	@Autowired
 	private ActorRepository actorRepository;
 	
 	private Actor actor;
 	
 	@Before
-	public void beforeMethod() {
-		actor = new Actor("Jan", "Nowak");
+	public void setUp() {
+		actor = new Actor(FIRST_NAME, LAST_NAME);
 	}
 	
 	@After
@@ -35,9 +40,27 @@ public class ActorRepositoryTest {
 	}
 	
 	@Test
-	public void findUserByFirstNameAndLastName() {
+	public void getActorsByLastNameReturnActors() {
 		actorRepository.save(actor);
-		Optional<Actor> foundActor = actorRepository.findByFirstNameAndLastName(actor.getFirstName(), actor.getLastName());
+		List<Actor> actors = actorRepository
+								.findByLastName(LAST_NAME)
+								.orElse(Collections.emptyList());
+		assertThat(actors, hasSize(1));
+	}
+	
+	@Test
+	public void gatActorsByLastNameReturnEmptyList() {
+		List<Actor> actors = actorRepository
+								.findByLastName(LAST_NAME)
+								.orElse(Collections.emptyList());
+		assertTrue(actors.isEmpty());
+	}
+	
+	@Test
+	public void getActorByFullNameReturnActor() {
+		actorRepository.save(actor);
+		Optional<Actor> foundActor = actorRepository
+										.findByFirstNameAndLastName(actor.getFirstName(), actor.getLastName());
 		assertEquals(actor, foundActor.get());
 	}
 	

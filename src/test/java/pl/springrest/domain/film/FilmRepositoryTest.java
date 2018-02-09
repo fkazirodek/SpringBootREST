@@ -1,18 +1,17 @@
 package pl.springrest.domain.film;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 import java.util.Optional;
-
-import javax.transaction.Transactional;
 
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -25,11 +24,12 @@ import org.springframework.test.context.junit4.SpringRunner;
 @SpringBootTest
 public class FilmRepositoryTest {
 
+	private static final String FILM_DESCRIPTION = "film description film description film description";
+	private static final String CATEGORY_ACTION = "action";
+	private static final String CATEGORY_HORROR = "horror";
+
 	@Autowired
 	private FilmRepository filmRepository;
-	
-	@Rule
-	public ExpectedException expectedException = ExpectedException.none();
 	
 	private PageRequest pageRequest; 
 	private Film film1;
@@ -37,62 +37,63 @@ public class FilmRepositoryTest {
 	private Film film3;
 	
 	@Before
-	public void beforeMethod() {
-		String filmDescr = "film description film description film description";
-		pageRequest = new PageRequest(0, 3);
-		film1 = new Film("Title1", filmDescr, "horror", LocalDate.of(2015, 4, 28));
-		film2 = new Film("Title2", filmDescr, "action", LocalDate.of(2016, 9, 28));
-		film3 = new Film("Title3", filmDescr, "horror", LocalDate.of(2011, 9, 28));
-		film1.setRating(8.0);
-		film2.setRating(6.0);
-		film3.setRating(8.8);
+	public void setUp() {
+		pageRequest = PageRequest.of(0, 5);
+		initData();
+	}
+
+	private void initData() {
+		film1 = new Film("Title1", FILM_DESCRIPTION, CATEGORY_HORROR, LocalDate.of(2015, 4, 28));
+		film2 = new Film("Title2", FILM_DESCRIPTION, CATEGORY_ACTION, LocalDate.of(2016, 9, 28));
+		film3 = new Film("Title3", FILM_DESCRIPTION, CATEGORY_HORROR, LocalDate.of(2011, 9, 28));
 		filmRepository.save(film1);
 		filmRepository.save(film2);
 		filmRepository.save(film3);
 	}
 	
 	@After
-	public void afterMethod() {
+	public void clean() {
 		filmRepository.deleteAll();
 	}
 
 	@Test
-	public void ifFilmsExistReturnListNotNullAndSize3() {
+	public void getAllFilms() {
 		Page<Film> film = filmRepository.findAll(pageRequest);
 		assertNotNull(film);
 		assertThat(film.getContent()).hasSize(3);
 	}
 	
 	@Test
-	@Transactional
-	public void findFilmByCategoryShouldReturnTwoFilmInOrder() {
-		String category = "horror";
-		Page<Film> filmsByCategory = filmRepository.findByCategoryOrderByRatingDesc(category, pageRequest);
-		assertNotNull(filmsByCategory);
-		assertThat(filmsByCategory.getContent()).hasSize(2);
-		assertThat(filmsByCategory.getContent().get(0)).isEqualToComparingFieldByField(film3);
-		assertThat(filmsByCategory.getContent().get(1)).isEqualToComparingFieldByField(film1);
+	public void getFilmByCategoryReturnFilmsInOrder() {
+		Page<Film> pageFilms = filmRepository.findByCategoryOrderByRatingDesc(CATEGORY_HORROR, pageRequest);
+		assertNotNull(pageFilms);
+		assertThat(pageFilms.getContent()).hasSize(2);
+		assertEquals(Arrays.asList(film3, film1), pageFilms.getContent());
+	}
+	
+	@Test(expected=DataIntegrityViolationException.class)
+	public void ifDescriptionNullThrowsDataIntegrityViolationException() {
+		filmRepository.save(new Film("Title4", null, CATEGORY_HORROR, LocalDate.of(2015, 4, 28)));
+	}
+	
+	@Test(expected=DataIntegrityViolationException.class)
+	public void ifDuplicateTitleThrowsDataIntegrityViolationException() {
+		filmRepository.save(new Film("Title1", FILM_DESCRIPTION, CATEGORY_HORROR, LocalDate.of(2015, 4, 28)));
 	}
 	
 	@Test
-	public void ifDescriptionEmptyExpectedConstraintViolationException() {
-		expectedException.expect(DataIntegrityViolationException.class);
-		filmRepository.save(new Film("Title4", null, "horror", LocalDate.of(2015, 4, 28)));
-	}
-	
-	@Test
-	@Transactional
-	public void ifFilmFoundReturnFilm() {
+	public void getFilmByTitleReturnFilm() {
 		String title = film1.getTitle();
-		Optional<Film> film = filmRepository.findByTitle(title);
-		assertNotNull(film.get());
-		assertThat(film.get()).isEqualToComparingFieldByField(film1);
+		Film film = filmRepository
+							.findByTitle(title)
+							.get();
+		assertNotNull(film);
+		assertEquals(title, film.getTitle());
 	}
 	
 	@Test
 	public void ifFilmNotFoundReturnEmptyOptional() {
-		String title = "T";
-		Optional<Film> film = filmRepository.findByTitle(title);
+		Optional<Film> film = filmRepository.findByTitle("");
 		assertFalse(film.isPresent());
 	}
 	

@@ -29,6 +29,7 @@ public class UserServiceTest {
 	@Mock
 	private UserRepository userRepository;
 
+	private final long userID = 1;
 	private User user;
 	private UserDTO userDto;
 	
@@ -39,15 +40,14 @@ public class UserServiceTest {
 	public void beforeMethod() {
 		userDTOConverter = new UserDTOConverter();
 		userService = new UserService(userRepository, userDTOConverter);
-		user = new User(1L, "fn", "ln", "login", "pass", "user@email.com");
-		userDto = new UserDTO(1L, "fn", "ln", "login", "pass", "user@email.com");
+		user = new User("fn", "ln", "login", "pass", "user@email.com");
+		userDto = new UserDTO("fn", "ln", "login", "pass", "user@email.com");
 	}
 
 	@Test
 	public void getUserByIDShouldReturnUserDTO() {
-		Long id = user.getId();
-		when(userRepository.findOne(id)).thenReturn(user);
-		UserDTO userDTO = userService.getUserBy(id);
+		when(userRepository.findById(userID)).thenReturn(Optional.of(user));
+		UserDTO userDTO = userService.getUserBy(userID);
 		compareUser(userDTO);
 	}
 
@@ -62,9 +62,9 @@ public class UserServiceTest {
 
 	@Test
 	public void whenGetUserByIdNotFoundUserShouldThrowsResourceNotFoundException() {
-		when(userRepository.findOne(user.getId())).thenReturn(null);
+		when(userRepository.findById(userID)).thenReturn(Optional.empty());
 		expectedException.expect(ResourceNotFoundException.class);
-		userService.getUserBy(user.getId());
+		userService.getUserBy(userID);
 	}
 
 	@Test
@@ -85,16 +85,16 @@ public class UserServiceTest {
 	public void updateAddressWhenUserExist() {
 		Address address = new Address("Poland", "Warsaw", "Str", "00-000");
 		user.setAddress(address);
-		when(userRepository.findOne(user.getId())).thenReturn(user);
-		UserDTO userDTO = userService.updateAddress(user.getAddress(), user.getId());
+		when(userRepository.findById(userID)).thenReturn(Optional.of(user));
+		UserDTO userDTO = userService.updateAddress(user.getAddress(), userID);
 		compareUser(userDTO);
 		
 	}
 	
 	@Test
 	public void noUpdateAddressWhenAddressNull() {
-		when(userRepository.findOne(user.getId())).thenReturn(user);
-		UserDTO userDTO = userService.updateAddress(user.getAddress(), user.getId());
+		when(userRepository.findById(userID)).thenReturn(Optional.of(user));
+		UserDTO userDTO = userService.updateAddress(user.getAddress(), userID);
 		assertNull(userDTO.getAddress());
 		
 	}

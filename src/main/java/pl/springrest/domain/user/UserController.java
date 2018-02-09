@@ -1,10 +1,10 @@
-package pl.springrest.endpoints;
+package pl.springrest.domain.user;
 
 import java.net.URI;
+import java.util.List;
 
 import javax.validation.Valid;
 
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
@@ -18,29 +18,31 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import pl.springrest.domain.ratings.RatingService;
-import pl.springrest.domain.user.UserService;
-import pl.springrest.dto.RatingDTO;
 import pl.springrest.dto.UserDTO;
 
 @RestController
-@RequestMapping("/user")
+@RequestMapping(UserController.BASE_URL)
 public class UserController {
 
+	public static final String BASE_URL = "/users";
+	
 	private UserService userService;
-	private RatingService ratingService;
 
-	public UserController(UserService userService, RatingService ratingService) {
+	public UserController(UserService userService) {
 		this.userService = userService;
-		this.ratingService = ratingService;
 	}
 
-	@GetMapping(path = "/{id}", produces = MediaType.APPLICATION_JSON_VALUE)
+	@GetMapping
+	public List<UserDTO> getUsers() {
+		return userService.getUsers();
+	}
+	
+	@GetMapping("/{id}")
 	public UserDTO getUser(@PathVariable long id) {
 		return userService.getUserBy(id);
 	}
 
-	@PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PostMapping
 	public ResponseEntity<Void> registerUser(@Valid @RequestBody UserDTO user, 
 											BindingResult bindingResult,
 											UriComponentsBuilder uriBuilder) throws BindException {
@@ -48,30 +50,27 @@ public class UserController {
 			throw new BindException(bindingResult);
 		UserDTO userDto = userService.saveUser(user);
 		URI locationUri = uriBuilder
-							.path("/user/")
+							.path(BASE_URL)
 							.path(userDto.getId().toString())
-								.build().toUri();
+							.build()
+							.toUri();
 		return ResponseEntity.created(locationUri).build();
 	}
 	
-	@PostMapping(path="/{id}/film/{title}" ,consumes=MediaType.APPLICATION_JSON_VALUE)
-	public void rateFilm(@RequestBody RatingDTO rating ,@PathVariable Long id, @PathVariable String title) {
-		ratingService.addRatingToFilm(id, title, rating);
-	}
-	
-	@PutMapping(path = "/{id}", consumes = MediaType.APPLICATION_JSON_VALUE)
+	@PutMapping("/{id}")
 	public ResponseEntity<Void> updateUser(@RequestBody UserDTO user, 
 											@PathVariable long id,
 											UriComponentsBuilder uriBuilder) {
 		UserDTO userDto = userService.updateAddress(user.getAddress(), id);
 		URI locationUri = uriBuilder
-							.path("/user/")
+							.path(BASE_URL)
 							.path(userDto.getId().toString())
-								.build().toUri();
+							.build()
+							.toUri();
 		return ResponseEntity.created(locationUri).build();
 	}
 
-	@DeleteMapping(path = "/{id}")
+	@DeleteMapping("/{id}")
 	public void deleteUser(@PathVariable long id) {
 		userService.deleteUser(id);
 	}

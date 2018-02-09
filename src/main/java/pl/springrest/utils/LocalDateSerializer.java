@@ -11,10 +11,12 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 
 public class LocalDateSerializer extends JsonSerializer<LocalDate> {
 
+	private static final String TIME_PATTERN = "dd/MM/yyyy";
+
 	@Override
 	public void serialize(LocalDate value, JsonGenerator gen, SerializerProvider serializers)
 			throws IOException, JsonProcessingException {
-		gen.writeString(value.format(DateTimeFormatter.ofPattern("dd/MM/yyyy")));
+		gen.writeString(value.format(DateTimeFormatter.ofPattern(TIME_PATTERN)));
 		
 	}
 
