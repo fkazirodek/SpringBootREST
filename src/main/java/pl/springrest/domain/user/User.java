@@ -10,12 +10,15 @@ import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.DynamicUpdate;
+
 import pl.springrest.domain.BaseEntity;
 import pl.springrest.domain.rating.Rating;
 
 @Entity
 @Table(name="users")
 @AttributeOverride(name = "id", column = @Column(name = "user_id"))
+@DynamicUpdate
 public class User extends BaseEntity {
 	
 	private static final long serialVersionUID = 1L;
@@ -27,13 +30,13 @@ public class User extends BaseEntity {
 	private String lastName;
 	
 	
-	@Column(unique=true)
+	@Column(unique=true, nullable=false)
 	private String login;
 	
 	@Column(nullable=false)
 	private String password;
 	
-	@Column(unique=true)
+	@Column(unique=true, nullable=false)
 	private String email;
 	
 	@OneToMany(mappedBy="user")

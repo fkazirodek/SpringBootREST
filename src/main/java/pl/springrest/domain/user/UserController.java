@@ -1,10 +1,10 @@
 package pl.springrest.domain.user;
 
 import java.net.URI;
-import java.util.List;
 
 import javax.validation.Valid;
 
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindException;
 import org.springframework.validation.BindingResult;
@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import pl.springrest.dto.UserDTO;
+import pl.springrest.dto.UserListDTO;
 
 @RestController
 @RequestMapping(UserController.BASE_URL)
@@ -33,12 +34,17 @@ public class UserController {
 	}
 
 	@GetMapping
-	public List<UserDTO> getUsers() {
-		return userService.getUsers();
+	public UserListDTO getUsers() {
+		return userService.getAllUsers();
 	}
 	
-	@GetMapping("/{id}")
-	public UserDTO getUser(@PathVariable long id) {
+	@GetMapping("/{login}")
+	public UserDTO getUserByLogin(@PathVariable String login) {
+		return userService.getUserBy(login);
+	}
+	
+	@GetMapping("/user/{id}")
+	public UserDTO getUserById(@PathVariable long id) {
 		return userService.getUserBy(id);
 	}
 
@@ -48,26 +54,35 @@ public class UserController {
 											UriComponentsBuilder uriBuilder) throws BindException {
 		if (bindingResult.hasErrors())
 			throw new BindException(bindingResult);
+		
 		UserDTO userDto = userService.saveUser(user);
-		URI locationUri = uriBuilder
-							.path(BASE_URL)
-							.path(userDto.getId().toString())
-							.build()
-							.toUri();
-		return ResponseEntity.created(locationUri).build();
+		URI resourceLocation = uriBuilder
+								.path(BASE_URL)
+								.path("/user/")
+								.path(userDto.getId().toString())
+								.build()
+								.toUri();
+		
+		return ResponseEntity.created(resourceLocation).build();
 	}
 	
 	@PutMapping("/{id}")
 	public ResponseEntity<Void> updateUser(@RequestBody UserDTO user, 
 											@PathVariable long id,
 											UriComponentsBuilder uriBuilder) {
+		
 		UserDTO userDto = userService.updateAddress(user.getAddress(), id);
-		URI locationUri = uriBuilder
-							.path(BASE_URL)
-							.path(userDto.getId().toString())
-							.build()
-							.toUri();
-		return ResponseEntity.created(locationUri).build();
+		URI resourceLocation = uriBuilder
+								.path(BASE_URL)
+								.path("/user/")
+								.path(userDto.getId().toString())
+								.build()
+								.toUri();
+		
+		return ResponseEntity
+				.status(HttpStatus.OK)
+				.location(resourceLocation)
+				.build();
 	}
 
 	@DeleteMapping("/{id}")

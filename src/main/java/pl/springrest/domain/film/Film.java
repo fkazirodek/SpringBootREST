@@ -15,6 +15,8 @@ import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.DynamicUpdate;
+
 import pl.springrest.domain.BaseEntity;
 import pl.springrest.domain.actor.Actor;
 import pl.springrest.domain.rating.Rating;
@@ -22,6 +24,7 @@ import pl.springrest.domain.rating.Rating;
 @Entity
 @Table(name="films")
 @AttributeOverride(name = "id", column = @Column(name = "film_id"))
+@DynamicUpdate
 public class Film extends BaseEntity {
 
 	private static final long serialVersionUID = 1L;
@@ -46,7 +49,7 @@ public class Film extends BaseEntity {
 				inverseJoinColumns = @JoinColumn(name = "actor_id", referencedColumnName = "id"))
 	private Set<Actor> actors = new HashSet<>();
 	
-	@OneToMany(mappedBy="film")
+	@OneToMany(mappedBy="film", cascade=CascadeType.MERGE)
 	Set<Rating> filmRatings = new HashSet<>();
 
 	public Film() {

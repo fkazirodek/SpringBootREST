@@ -2,8 +2,8 @@ package pl.springrest.dto;
 
 import java.util.List;
 
-public class ActorListDTO {
-
+public class ActorListDTO{
+	
 	private List<ActorDTO> actors;
 	
 	public ActorListDTO() {}

@@ -86,6 +86,14 @@ public class FilmServiceTest {
 		assertEquals(2, allFilms.getFilms().size());
 	}
 	
+	@Test(expected = ResourceNotFoundException.class)
+	public void filmsNotFoundthrowsResourceNotFoundEx() {
+		when(filmRepository.findAll(pageable))
+			.thenReturn((Page<Film>) new PageImpl<>(new ArrayList<Film>(), pageable, SIZE));
+		
+		filmService.getAllFilms(PAGE, SIZE);
+	}
+	
 	@Test
 	public void getFilmsByCategoryReturnFilms() {
 		when(filmRepository.findByCategoryOrderByRatingDesc(CATEGORY_ACTION, pageable))
@@ -180,15 +188,14 @@ public class FilmServiceTest {
 
 	@Test
 	public void updateFilmRating() {
+		when(filmRepository.findByTitle(FILM_ACT_TITLE)).thenReturn(Optional.of(film_action));
 		Rating r1 = new Rating(8.0);
 		Rating r2 = new Rating(10);
-		
-		Set<Rating> filmRatings = film_action.getFilmRatings();
-		filmRatings.add(r1);
-		filmRatings.add(r2);
+
 		double avgRating = (r1.getRating()+r2.getRating())/2;
 		
-		filmService.updateRating(film_action);
+		filmService.updateRating(film_action, r1);
+		filmService.updateRating(film_action, r2);
 		assertEquals(avgRating, film_action.getRating(), 0.01);
 		
 	}

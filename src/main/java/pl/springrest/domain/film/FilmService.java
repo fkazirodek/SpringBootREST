@@ -27,7 +27,7 @@ public class FilmService {
 	private FilmRepository filmRepository;
 	private FilmDTOConverter filmDTOConverter;
 	private ActorDTOConverter actorDTOConverter;
-
+	
 	public FilmService(FilmRepository filmRepository, FilmDTOConverter filmDTOConverter, ActorDTOConverter actorDTOConverter) {
 		this.filmRepository = filmRepository;
 		this.filmDTOConverter = filmDTOConverter;
@@ -156,12 +156,16 @@ public class FilmService {
 	}
 
 	
-	public void updateRating(Film film) {
-		film.setRating(getAverageRating(film));
+	public FilmDTO updateRating(Film film, Rating rating) {
+		Film filmByTitle = filmRepository.findByTitle(film.getTitle()).get();
+		filmByTitle.getFilmRatings().add(rating);
+		filmByTitle.setRating(getAverageRating(filmByTitle));
+		
+		return filmDTOConverter.convert(film);
 	}
 	
-	private double getAverageRating(Film filmEntity) {
-		return filmEntity
+	private double getAverageRating(Film film) {
+		return film
 				.getFilmRatings()
 					.stream()
 						.map(Rating::getRating)

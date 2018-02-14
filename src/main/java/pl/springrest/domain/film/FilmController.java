@@ -15,11 +15,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.SessionAttribute;
 import org.springframework.web.util.UriComponentsBuilder;
 
-import pl.springrest.domain.rating.RatingService;
-import pl.springrest.domain.user.User;
 import pl.springrest.dto.ActorListDTO;
 import pl.springrest.dto.FilmDTO;
 import pl.springrest.dto.FilmListDTO;
@@ -31,11 +28,9 @@ class FilmController {
 	public static final String BASE_URL = "/films";
 	
 	private FilmService filmService;
-	private RatingService ratingService;
 
-	public FilmController(FilmService filmService, RatingService ratingService) {
+	public FilmController(FilmService filmService) {
 		this.filmService = filmService;
-		this.ratingService = ratingService;
 	}
 
 	@GetMapping
@@ -73,11 +68,6 @@ class FilmController {
 						.build()
 						.toUri();
 		return ResponseEntity.created(location).build();		
-	}
-	
-	@PostMapping("/{title}")
-	public void rateFilm(@PathVariable String title, @RequestParam double rating, @SessionAttribute User user) {
-		ratingService.addRatingToFilm(user.getLogin(), title, rating);
 	}
 	
 	@PutMapping("/{title}/actors")

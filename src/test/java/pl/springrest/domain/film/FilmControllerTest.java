@@ -19,7 +19,6 @@ import java.util.HashSet;
 import java.util.List;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -177,20 +176,34 @@ public class FilmControllerTest {
 		assertThat(contentAsString).containsIgnoringCase(descSizeErrMessage);
 	}
 	
-	// TODO fix and write a better test
 	@Test
-	@Ignore
-	public void addActorsReturnStatusOK() throws Exception {
+	public void addActorsToFilmReturnStatusOK() throws Exception {
 		List<ActorDTO> actorDTOs = Arrays.asList(new ActorDTO("firstname", "lastname"));
 		filmDto1.setActors(new HashSet<>(actorDTOs));
 		actorListDTO = new ActorListDTO(actorDTOs);
 		
-		when(filmService.addActorsToFilm(any(), eq(FILM_TITLE))).thenReturn(filmDto1);
+		when(filmService.addActorsToFilm(any(ActorListDTO.class), eq(FILM_TITLE))).thenReturn(filmDto1);
 		
 		mockMvc.perform(put(FilmController.BASE_URL + "/{title}/actors", FILM_TITLE)
 							.contentType(MediaType.APPLICATION_JSON)
-							.content(objectToJson(actorDTOs)))
+							.content(objectToJson(actorListDTO)))
 							.andExpect(status().isOk());
+	}
+	
+	@Test
+	public void addActorsToFilmReturnFilmDTOWithActors() throws Exception {
+		List<ActorDTO> actorDTOs = Arrays.asList(new ActorDTO("Tom", "Cruise"));
+		filmDto1.setActors(new HashSet<>(actorDTOs));
+		actorListDTO = new ActorListDTO(actorDTOs);
+		
+		when(filmService.addActorsToFilm(any(ActorListDTO.class), eq(FILM_TITLE))).thenReturn(filmDto1);
+		
+		mockMvc.perform(put(FilmController.BASE_URL + "/{title}/actors", FILM_TITLE)
+							.contentType(MediaType.APPLICATION_JSON)
+							.content(objectToJson(actorListDTO)))
+							.andExpect(jsonPath("$.actors").exists())
+							.andExpect(jsonPath("$.actors").isArray())
+							.andExpect(jsonPath("$.actors", hasSize(1)));
 	}
 	
 	private String objectToJson(Object obj) throws JsonProcessingException {

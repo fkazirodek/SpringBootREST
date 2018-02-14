@@ -16,7 +16,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.inMemoryAuthentication()
 				.withUser("user")
-				.password("pass")
+				.password("password")
 				.roles(ROLE_USER)
 			.and()
 				.withUser("admin")
@@ -29,7 +29,7 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 			http
 				.authorizeRequests()
 					.antMatchers(HttpMethod.POST ,"/films", "/actors").hasRole(ROLE_ADMIN)
-					.antMatchers(HttpMethod.POST, "/users").authenticated()
+					.antMatchers(HttpMethod.POST, "/users").hasAnyRole(ROLE_USER, ROLE_ADMIN)
 					.antMatchers(HttpMethod.GET, "/users").hasRole(ROLE_ADMIN)
 					.anyRequest().permitAll()
 				.and()

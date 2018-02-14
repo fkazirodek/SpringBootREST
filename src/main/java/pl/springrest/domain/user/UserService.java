@@ -10,6 +10,7 @@ import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
 import pl.springrest.dto.UserDTO;
+import pl.springrest.dto.UserListDTO;
 import pl.springrest.utils.dto_converters.UserDTOConverter;
 
 @Service
@@ -30,15 +31,30 @@ public class UserService {
 	 * 
 	 * @return List of UserDTO
 	 */
-	public List<UserDTO> getUsers() {
-		return userDTOConverter.convertAll(userRepository.findAll());
+	public UserListDTO getAllUsers() {
+		List<UserDTO> userDTOs = userDTOConverter.convertAll(userRepository.findAll());
+		return new UserListDTO(userDTOs);
 	}
 	
 	/**
-	 * Find user in database and convert to DTO
+	 * Find user by login
+	 * 
+	 * @param login
+	 * @return
+	 * @throws ResourceNotFoundException
+	 *             if user not found
+	 */
+	public UserDTO getUserBy(String login) {
+		return userRepository
+				.findByLogin(login)
+				.map(userDTOConverter::convert)
+				.orElseThrow(() -> new ResourceNotFoundException("User " + login + " not found" )); 
+	}
+	
+	/**
+	 * Find user by ID
 	 * 
 	 * @param id
-	 *            user id
 	 * @return UserDTO
 	 * @throws ResourceNotFoundException
 	 *             if user not found
@@ -48,22 +64,6 @@ public class UserService {
 				.findById(id)
 				.map(userDTOConverter::convert)
 				.orElseThrow(() -> new ResourceNotFoundException("User " + id + " not found"));
-	}
-
-	/**
-	 * Find user in database and convert to DTO
-	 * 
-	 * @param id
-	 *            user login
-	 * @return UserDTO
-	 * @throws ResourceNotFoundException
-	 *             if user not found
-	 */
-	public UserDTO getUserBy(String login) {
-		return userRepository
-						.findByLogin(login)
-						.map(userDTOConverter::convert)
-							.orElseThrow(ResourceNotFoundException::new);
 	}
 
 	/**
