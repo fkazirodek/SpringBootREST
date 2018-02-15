@@ -7,6 +7,8 @@ import javax.persistence.AttributeOverride;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
@@ -39,14 +41,17 @@ public class User extends BaseEntity {
 	@Column(unique=true, nullable=false)
 	private String email;
 	
-	@OneToMany(mappedBy="user")
-	Set<Rating> filmsRatings = new HashSet<>();
-	
 	@Embedded
 	private Address address;
+	
+	@OneToMany(mappedBy="user")
+	private Set<Rating> filmsRatings = new HashSet<>();
+	
+	@ManyToMany(fetch = FetchType.EAGER)
+    private Set<UserRole> roles = new HashSet<>();
+	
 
-	public User() {
-	}
+	public User() {}
 
 	public User(String login, String password, String email) {
 		this.login = login;
@@ -61,7 +66,7 @@ public class User extends BaseEntity {
 		this.password = password;
 		this.email = email;
 	}
-	
+
 	public String getFirstName() {
 		return firstName;
 	}
@@ -105,7 +110,7 @@ public class User extends BaseEntity {
 	public Address getAddress() {
 		return address;
 	}
-	
+
 	public void setAddress(Address address) {
 		this.address = address;
 	}
@@ -114,8 +119,16 @@ public class User extends BaseEntity {
 		return filmsRatings;
 	}
 
-	public void setFilmsRatings(Set<Rating> filmsRating) {
-		this.filmsRatings = filmsRating;
+	public void setFilmsRatings(Set<Rating> filmsRatings) {
+		this.filmsRatings = filmsRatings;
+	}
+
+	public Set<UserRole> getRoles() {
+		return roles;
+	}
+
+	public void setRoles(Set<UserRole> roles) {
+		this.roles = roles;
 	}
 	
 }

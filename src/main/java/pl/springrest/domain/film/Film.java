@@ -49,8 +49,8 @@ public class Film extends BaseEntity {
 				inverseJoinColumns = @JoinColumn(name = "actor_id", referencedColumnName = "id"))
 	private Set<Actor> actors = new HashSet<>();
 	
-	@OneToMany(mappedBy="film", cascade=CascadeType.MERGE)
-	Set<Rating> filmRatings = new HashSet<>();
+	@OneToMany(mappedBy="film")
+	private Set<Rating> filmRatings = new HashSet<>();
 
 	public Film() {
 	}

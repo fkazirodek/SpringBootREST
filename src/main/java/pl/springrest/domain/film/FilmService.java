@@ -155,12 +155,22 @@ public class FilmService {
 		return filmDTOConverter.convert(filmSaved);
 	}
 
-	
-	public FilmDTO updateRating(Film film, Rating rating) {
-		Film filmByTitle = filmRepository.findByTitle(film.getTitle()).get();
-		filmByTitle.getFilmRatings().add(rating);
-		filmByTitle.setRating(getAverageRating(filmByTitle));
-		
+	/**
+	 * Add rating to film's rating set and update average rating
+	 * 
+	 * @param filmTitle
+	 * @param rating
+	 * @return updated FilmDTO
+	 * @throws ResourceNotFoundException 
+	 * 				if film not found in DB
+	 */
+	public FilmDTO updateFilmRating(String filmTitle, Rating rating) {
+		Film film = filmRepository
+						.findByTitle(filmTitle)
+						.orElseThrow(() -> new ResourceNotFoundException("Film " + filmTitle + " not found"));
+		film.getFilmRatings().add(rating);
+		film.setRating(getAverageRating(film));
+		rating.setFilm(film);
 		return filmDTOConverter.convert(film);
 	}
 	

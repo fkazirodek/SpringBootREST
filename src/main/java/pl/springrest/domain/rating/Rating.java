@@ -1,6 +1,7 @@
 package pl.springrest.domain.rating;
 
 import javax.persistence.AttributeOverride;
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -18,14 +19,15 @@ public class Rating extends BaseEntity {
 
 	private static final long serialVersionUID = 1L;
 	
-	@ManyToOne
+	@ManyToOne(cascade=CascadeType.ALL)
 	@JoinColumn(name = "user_id") 
 	private User user;
 	
-	@ManyToOne
+	@ManyToOne(cascade=CascadeType.ALL)
 	@JoinColumn(name="film_id")
 	private Film film;
 	
+	@Column(nullable=false, updatable=true, precision=3)
 	private double rating;
 	
 	public Rating() {

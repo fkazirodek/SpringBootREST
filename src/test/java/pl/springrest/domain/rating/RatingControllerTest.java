@@ -25,9 +25,10 @@ import pl.springrest.dto.FilmDTO;
 import pl.springrest.exceptions.GlobalControllerExceptionHandler;
 
 public class RatingControllerTest {
-
+	
 	private static final String LOGIN = "user";
 	private static final String PASSWORD = "password";
+	private static final String ROLE_USER = "ROLE_USER";
 	
 	private static final String FILM_TITLE = "title";
 	private static final int RATING = 8;
@@ -53,7 +54,7 @@ public class RatingControllerTest {
 				.build();
 		
 		filmDTO = new FilmDTO(FILM_TITLE, "desc", "action", LocalDate.now());
-		principal = new GenericPrincipal(LOGIN, PASSWORD, Collections.singletonList("ROLE_USER"));
+		principal = new GenericPrincipal(LOGIN, PASSWORD, Collections.singletonList(ROLE_USER));
 	}
 	
 	@Test

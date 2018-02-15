@@ -21,6 +21,7 @@ public class UserDTOConverter implements DTOConverter<User, UserDTO> {
 		Address address = user.getAddress();
 		if (address != null)
 			userDTO.setAddress(address);
+		userDTO.setRoles(user.getRoles());
 		return userDTO;
 	}
 	
@@ -29,6 +30,7 @@ public class UserDTOConverter implements DTOConverter<User, UserDTO> {
 		Address address = userDto.getAddress();
 		if (address != null)
 			user.setAddress(address);
+		user.setRoles(userDto.getRoles());
 		return user;
 	}
 }

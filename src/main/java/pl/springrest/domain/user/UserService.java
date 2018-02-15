@@ -9,6 +9,7 @@ import org.springframework.dao.DuplicateKeyException;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 import org.springframework.stereotype.Service;
 
+import pl.springrest.domain.rating.Rating;
 import pl.springrest.dto.UserDTO;
 import pl.springrest.dto.UserListDTO;
 import pl.springrest.utils.dto_converters.UserDTOConverter;
@@ -17,14 +18,17 @@ import pl.springrest.utils.dto_converters.UserDTOConverter;
 @Transactional
 public class UserService {
 
+	private static final String DEFAULT_ROLE = "ROLE_USER";
+	
 	private UserRepository userRepository;
 	private UserDTOConverter userDTOConverter;
+	private RoleRepository roleRepository;
 
-	public UserService(UserRepository userRepository, UserDTOConverter userDTOConverter) {
+	public UserService(UserRepository userRepository, UserDTOConverter userDTOConverter, RoleRepository roleRepository) {
 		this.userRepository = userRepository;
 		this.userDTOConverter = userDTOConverter;
+		this.roleRepository = roleRepository;
 	}
-
 
 	/**
 	 * Get all users
@@ -76,9 +80,18 @@ public class UserService {
 	 *             if user already exist in database
 	 */
 	public UserDTO saveUser(UserDTO userDto) {
+		User user = roleRepository
+					.findByRole(DEFAULT_ROLE)
+					.map(role -> {
+						userDto.addRole(role);
+						return userDto;
+					})
+					.map(userDTOConverter::convert)
+					.get();
+			
 		User savedUser;
 		try {
-			savedUser = userRepository.save(userDTOConverter.convert(userDto));
+			savedUser = userRepository.save(user);
 		} catch (DataIntegrityViolationException ex) {
 			throw new DuplicateKeyException("User " + userDto.getLogin() + " exist");
 		}
@@ -121,5 +134,16 @@ public class UserService {
 						.findById(id)
 						.orElseThrow(() -> new ResourceNotFoundException("Can not delete user because user not found"));
 		userRepository.delete(user);
+	}
+	
+	public void updatingUsersMovieRating(String login, Rating rating) {
+		userRepository
+				.findByLogin(login)
+				.map(user -> {
+					user.getFilmsRatings().add(rating);
+					rating.setUser(user);
+					return user;
+				})
+				.orElseThrow(() -> new ResourceNotFoundException("User " + login + " not found"));
 	}
 }

@@ -194,8 +194,8 @@ public class FilmServiceTest {
 
 		double avgRating = (r1.getRating()+r2.getRating())/2;
 		
-		filmService.updateRating(film_action, r1);
-		filmService.updateRating(film_action, r2);
+		filmService.updateFilmRating(FILM_ACT_TITLE, r1);
+		filmService.updateFilmRating(FILM_ACT_TITLE, r2);
 		assertEquals(avgRating, film_action.getRating(), 0.01);
 		
 	}

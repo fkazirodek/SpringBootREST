@@ -9,9 +9,11 @@ import javax.validation.constraints.Size;
 
 import javax.validation.constraints.NotEmpty;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import pl.springrest.domain.rating.Rating;
 import pl.springrest.utils.LocalDateDeserializer;
 import pl.springrest.utils.LocalDateSerializer;
 
@@ -34,6 +36,9 @@ public class FilmDTO {
 	private LocalDate dateRelease;
 	
 	private Set<ActorDTO> actors;
+	
+	@JsonIgnore
+	private Set<Rating> filmRatings;
 	
 	private double rating;
 	
@@ -93,6 +98,14 @@ public class FilmDTO {
 
 	public void setRating(double rating) {
 		this.rating = rating;
+	}
+
+	public Set<Rating> getFilmRatings() {
+		return filmRatings;
+	}
+
+	public void setFilmRatings(Set<Rating> filmRatings) {
+		this.filmRatings = filmRatings;
 	}
 
 	@Override

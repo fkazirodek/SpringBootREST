@@ -4,13 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.when;
-import static org.mockito.ArgumentMatchers.*;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -19,6 +20,7 @@ import org.mockito.MockitoAnnotations;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.rest.webmvc.ResourceNotFoundException;
 
+import pl.springrest.domain.rating.Rating;
 import pl.springrest.dto.UserDTO;
 import pl.springrest.utils.dto_converters.UserDTOConverter;
 
@@ -31,24 +33,30 @@ public class UserServiceTest {
 	private static final String PASSWORD = "password";
 	private static final String EMAIL = "user@email.com";
 	
+	private static final String ROLE_USER = "ROLE_USER";
+	
 	private UserService userService;
 	private UserDTOConverter userDTOConverter;
 	
 	@Mock
 	private UserRepository userRepository;
+	@Mock
+	private RoleRepository roleRepository;
 
 	private User user;
 	private UserDTO userDto;
+	private UserRole role;
 
 	@Before
 	public void setUp() {
 		MockitoAnnotations.initMocks(this);
 		
 		userDTOConverter = new UserDTOConverter();
-		userService = new UserService(userRepository, userDTOConverter);
+		userService = new UserService(userRepository, userDTOConverter, roleRepository);
 		
 		user = new User(F_NAME, L_NAME, LOGIN, PASSWORD, EMAIL);
 		userDto = new UserDTO(F_NAME, L_NAME, LOGIN, PASSWORD, EMAIL);
+		role = new UserRole(ROLE_USER);
 	}
 	
 	@Test
@@ -99,15 +107,22 @@ public class UserServiceTest {
 
 	@Test
 	public void saveUser() {
+		user.getRoles().add(role);
+		when(roleRepository.findByRole(ROLE_USER))
+			.thenReturn(Optional.of(role));
 		when(userRepository.save(any(User.class)))
 			.thenReturn(user);
 		
 		UserDTO userDTO = userService.saveUser(userDto);
 		assertUser(userDTO);
+		assertThat(userDTO.getRoles()).isNotEmpty();
+		assertThat(userDTO.getRoles()).hasSize(1);
 	}
 	
 	@Test(expected = DataIntegrityViolationException.class)
 	public void ifDuplicateUserThrows() {
+		when(roleRepository.findByRole(ROLE_USER))
+			.thenReturn(Optional.of(role));
 		when(userRepository.save(any(User.class)))
 			.thenThrow(new DataIntegrityViolationException(""));
 		
@@ -116,6 +131,9 @@ public class UserServiceTest {
 	
 	@Test(expected = DataIntegrityViolationException.class)
 	public void ifUserExistThrowsDataIntegrityViolationEx() {
+		when(roleRepository.findByRole(ROLE_USER))
+			.thenReturn(Optional.of(role));
+		
 		when(userRepository.save(any(User.class)))
 			.thenThrow(new DataIntegrityViolationException("Conflict"));
 		
@@ -165,6 +183,23 @@ public class UserServiceTest {
 			.thenReturn(Optional.empty());
 		
 		userService.deleteUser(ID);
+	}
+	
+	@Test
+	public void updatingUsersMovieRatingShouldUpdateRating() {
+		Rating rating = new Rating(8);
+		
+		when(userRepository.findByLogin(LOGIN)).thenReturn(Optional.of(user));
+		
+		userService.updatingUsersMovieRating(LOGIN, rating);
+		Set<Rating> userFilmsRatings = user.getFilmsRatings();
+		User userReturned = rating.getUser();
+		
+		assertThat(userFilmsRatings).isNotEmpty();
+		assertThat(userFilmsRatings).hasSize(1);
+		
+		assertNotNull(userReturned);
+		assertEquals(LOGIN, userReturned.getLogin());
 	}
 	
 	private void assertUser(UserDTO userDTO) {
